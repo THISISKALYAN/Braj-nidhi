@@ -1257,7 +1257,7 @@ export default function BrajYatra() {
           <BookNowButton href="/guesthouse#rooms-suites" />
         </div>
         <div className="mobile-header-actions">
-          <button className="mobile-menu-btn" onClick={() = aria-label="Open menu"> setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label="Open menu">
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
@@ -1271,7 +1271,7 @@ export default function BrajYatra() {
               <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
                 <img loading="lazy" decoding="async" src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" style={{ height: "45px", width: "auto", cursor: "pointer" }} />
               </Link>
-              <button className="mobile-menu-close" onClick={() = aria-label="Close menu"> setIsMobileMenuOpen(false)}><X size={24} /></button>
+              <button className="mobile-menu-close" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close menu"><X size={24} /></button>
             </div>
             <div className="mobile-nav-links">
               <ul>

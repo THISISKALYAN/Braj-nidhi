@@ -75,7 +75,7 @@ const HeroSlideshow = ({ images, mobileImages }: { images: string[]; mobileImage
               fill
               priority={i === 0}
               sizes="100vw"
-              quality={80}
+              quality={95}
               style={{
                 objectFit: 'cover',
                 objectPosition: imagePositions[currentImage] ?? 'center'

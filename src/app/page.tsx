@@ -1015,7 +1015,7 @@ Event: ${bookingData.eventType}`);
 
                 {/*  Offer Card 2  */}
                 <div className="offer-card immersive">
-                    <Image src="/0e8512e05fcc4674c32b279cd6aa7031.webp.webp" alt="Royal Wedding" fill style={{ objectFit: 'cover' }} className="offer-bg-img" />
+                    <Image src="/0e8512e05fcc4674c32b279cd6aa7031.jpg.webp" alt="Royal Wedding" fill style={{ objectFit: 'cover' }} className="offer-bg-img" />
                     <div className="offer-gradient-blur"></div>
                     
                     <div className="offer-content">

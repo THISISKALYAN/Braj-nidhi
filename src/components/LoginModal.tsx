@@ -67,19 +67,19 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, initialIsR
         @keyframes lm-fade { from { opacity:0; } to { opacity:1; } }
         @keyframes lm-slide { from { opacity:0; transform:translateY(18px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
         @keyframes lm-spin { to { transform:rotate(360deg); } }
-        .lm-card { background:#fff; border-radius:24px; width:100%; max-width:420px; padding:0 0 28px; box-shadow:0 32px 80px rgba(0,0,0,0.25); animation:lm-slide 0.3s cubic-bezier(0.16,1,0.3,1); position:relative; font-family:'Outfit',-apple-system,BlinkMacSystemFont,sans-serif; overflow:hidden; }
+        .lm-card { background:#fff; border-radius:24px; width:100%; max-width:420px; padding:0 0 28px; box-shadow:0 32px 80px rgba(0,0,0,0.25); animation:lm-slide 0.3s cubic-bezier(0.16,1,0.3,1); position:relative; font-family:var(--font-outfit),-apple-system,BlinkMacSystemFont,sans-serif; overflow:hidden; }
         .lm-card-top { background:#ffffff; padding:28px 36px 20px; text-align:center; position:relative; border-bottom:1px solid #f1f5f9; }
         .lm-card-body { padding:20px 36px 0; }
         .lm-close { position:absolute; top:14px; right:14px; width:28px; height:28px; border-radius:50%; border:none; background:#f3f4f6; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#6b7280; transition:background 0.2s; z-index:1; }
         .lm-close:hover { background:#e5e7eb; color:#111; }
         .lm-logo { display:flex; justify-content:center; margin-bottom:12px; }
         .lm-logo img { height:56px; width:56px; object-fit:contain; border-radius:50%; border:1px solid #e2e8f0; background:#fff; padding:2px; }
-        .lm-heading { text-align:center; font-size:21px; font-weight:800; color:#0f172a !important; margin:0 0 4px; letter-spacing:0.2px; font-family:'Outfit',sans-serif !important; text-transform:none !important; }
-        .lm-sub { text-align:center; font-size:13px; color:#64748b; margin:0; font-family:'Outfit',sans-serif; }
+        .lm-heading { text-align:center; font-size:21px; font-weight:800; color:#0f172a !important; margin:0 0 4px; letter-spacing:0.2px; font-family:var(--font-outfit),sans-serif !important; text-transform:none !important; }
+        .lm-sub { text-align:center; font-size:13px; color:#64748b; margin:0; font-family:var(--font-outfit),sans-serif; }
         .lm-alert-err { background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:10px 14px; font-size:13px; color:#dc2626; font-weight:600; margin-bottom:16px; }
         .lm-alert-ok  { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:10px 14px; font-size:13px; color:#16a34a; font-weight:600; margin-bottom:16px; display:flex; align-items:center; gap:6px; }
         .lm-field { margin-bottom:13px; }
-        .lm-label { display:block; font-size:13px; font-weight:700; color:#374151; margin-bottom:5px; letter-spacing:0.1px; font-family:'Outfit',sans-serif !important; }
+        .lm-label { display:block; font-size:13px; font-weight:700; color:#374151; margin-bottom:5px; letter-spacing:0.1px; font-family:var(--font-outfit),sans-serif !important; }
         .lm-input-wrap { position:relative; display:flex; align-items:center; border:1.5px solid #e2e8f0; border-radius:12px; height:50px; background:#fff; transition:border-color 0.2s, box-shadow 0.2s; overflow:hidden; }
         .lm-input-wrap:focus-within { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.1); }
         .lm-icon { display:flex; align-items:center; justify-content:center; padding:0 12px; color:#9ca3af; flex-shrink:0; }
@@ -115,7 +115,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, initialIsR
         <div className="lm-card-top">
           <button className="lm-close" onClick={onClose}><X size={13} strokeWidth={2.5} /></button>
           <div className="lm-logo">
-            <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi" />
+            <img loading="lazy" decoding="async" src="/Braj_nidhi_.webp" alt="Braj Nidhi" />
           </div>
           <h2 className="lm-heading">{isRegistering ? 'Create Account' : 'Welcome Back'}</h2>
           <p className="lm-sub">{isRegistering ? 'Join Braj Nidhi for exclusive benefits' : 'Sign in to your Braj Nidhi account'}</p>

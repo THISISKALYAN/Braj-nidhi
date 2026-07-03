@@ -55,7 +55,7 @@ const InstagramIconComp = () => (
 const GlowingAvatar = () => (
   <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center bg-gradient-to-tr from-[#9F7AEA] via-[#EC4899] to-[#3B82F6] shadow-[0_0_12px_rgba(159,122,234,0.4)]">
     <div className="absolute inset-[1.5px] rounded-full bg-white flex items-center justify-center overflow-hidden">
-      <img loading="lazy" decoding="async" src="/1200x630wa-removebg-preview.png"
+      <img loading="lazy" decoding="async" src="/1200x630wa-removebg-preview.webp"
         alt="Braj Nidhi Avatar"
         className="w-6 h-6 object-contain" />
     </div>
@@ -424,7 +424,7 @@ export default function FloatingWidgets() {
   ];
 
   const localAttractions = [
-    { name: "Bankey Bihari Temple", distance: "1.2 km away", desc: "The ultimate heart of Vrindavan, housing the self-manifested form of Thakur Bankey Bihari Ji.", query: "Tell me about Bankey Bihari Temple daily yatra" },
+    { name: "Bankey Bihari Temple", distance: "7.7 km away (20 min ride)", desc: "The ultimate heart of Vrindavan, housing the self-manifested form of Thakur Bankey Bihari Ji.", query: "Tell me about Bankey Bihari Temple daily yatra" },
     { name: "Prem Mandir", distance: "2.5 km away", desc: "A magnificent temple built of Italian white marble, decorated with dynamic musical fountains and beautiful tableaux.", query: "Tell me about Prem Mandir light shows & timings" },
     { name: "Sri Krishna Balaram Mandir (ISKCON)", distance: "2.1 km away", desc: "Spiritual headquarters with non-stop Hare Krishna kirtan, gorgeous deities, and a lovely clean courtyard.", query: "Tell me about ISKCON Vrindavan timings" },
     { name: "Radha Raman Temple", distance: "0.8 km away", desc: "Ancient holy place where the divine deity self-manifested from a sacred saligram sila in 1542.", query: "Tell me about Radha Raman Temple history" }
@@ -499,7 +499,7 @@ export default function FloatingWidgets() {
             {isChatOpen ? (
               <X className="w-6 h-6 text-[#7137F1] stroke-[2.5]" />
             ) : (
-              <img loading="lazy" decoding="async" src="/1200x630wa-removebg-preview.png"
+              <img loading="lazy" decoding="async" src="/1200x630wa-removebg-preview.webp"
                 alt="Braj Nidhi AI"
                 className="w-10 h-10 object-contain hover:scale-110 transition-transform duration-300" />
             )}

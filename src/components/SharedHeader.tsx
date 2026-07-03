@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import BookNowButton from '@/components/BookNowButton';
+import Image from 'next/image';
 
 export default function SharedHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -37,8 +38,10 @@ export default function SharedHeader() {
             : 'linear-gradient(180deg, rgba(255,252,245,0.92) 60%, transparent 100%)',
         }}
       >
-        <img loading="lazy" decoding="async" src="/sp logo.png"
+        <Image src="/sp logo.webp"
           alt="His Divine Grace Srila Prabhupada"
+          width={150} height={108}
+          priority
           style={{
             height: '108px',
             width: 'auto',
@@ -55,7 +58,7 @@ export default function SharedHeader() {
         style={{ top: scrolled ? undefined : '82px' }}
       >
         <Link href="/" className="logo" style={{ textDecoration: 'none' }}>
-          <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: '60px', width: 'auto' }} />
+          <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" priority width={180} height={60} style={{ height: '60px', width: 'auto' }} />
         </Link>
 
         <nav>
@@ -76,7 +79,7 @@ export default function SharedHeader() {
         <div className="mobile-header-actions">
           <button
             className="mobile-menu-btn"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={() = aria-label="Open menu"> setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -89,9 +92,9 @@ export default function SharedHeader() {
           <div className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="mobile-menu-header">
               <Link href="/" onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center' }}>
-                <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: '45px', width: 'auto' }} />
+                <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" priority width={135} height={45} style={{ height: '45px', width: 'auto' }} />
               </Link>
-              <button className="mobile-menu-close" onClick={() => setIsMobileMenuOpen(false)}>
+              <button className="mobile-menu-close" onClick={() = aria-label="Close menu"> setIsMobileMenuOpen(false)}>
                 <X size={24} />
               </button>
             </div>

@@ -128,7 +128,7 @@ export default function AdminAvailabilityPage() {
     <div style={{
       minHeight: '100vh',
       background: '#f8f9fa',
-      fontFamily: "'Outfit', 'Inter', sans-serif",
+      fontFamily: "var(--font-outfit), 'Inter', sans-serif",
     }}>
       {/* Top bar */}
       <div style={{

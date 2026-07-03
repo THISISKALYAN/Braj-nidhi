@@ -46,7 +46,7 @@ export default function InvoiceReceipt({
       {/* Header */}
       <div className="inv-header">
         <div className="inv-logo-area">
-          <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: '60px', width: 'auto' }} />
+          <img loading="lazy" decoding="async" src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" style={{ height: '60px', width: 'auto' }} />
         </div>
         <div className="inv-title-area">
           <h1>INVOICE</h1>

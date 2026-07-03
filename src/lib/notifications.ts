@@ -57,7 +57,7 @@ function buildEmailHTML(p: BookingNotificationPayload): string {
         <!-- Header -->
         <tr>
           <td style="background:linear-gradient(135deg,${color} 0%,${color}cc 100%);padding:36px 36px 28px;text-align:center;">
-            <img src="https://thebrajnidhi.com/Braj_nidhi_.png" alt="Braj Nidhi" height="52" style="margin-bottom:16px;border-radius:8px;" onerror="this.style.display='none'"/>
+            <img src="https://thebrajnidhi.com/Braj_nidhi_.webp" alt="Braj Nidhi" height="52" style="margin-bottom:16px;border-radius:8px;" onerror="this.style.display='none'"/>
             <div style="width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:28px;">✅</div>
             <h1 style="color:#ffffff;margin:0 0 6px;font-size:26px;font-weight:900;letter-spacing:0.3px;">Booking Confirmed!</h1>
             <p style="color:rgba(255,255,255,0.85);margin:0;font-size:15px;">Radhe Radhe 🙏 Your stay at Braj Nidhi is locked in</p>

@@ -18,7 +18,7 @@ export default function SectionLinkButton({ href, children, className = '', styl
           border: none;
           padding: 0.9rem 2rem;
           margin: 0;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           position: relative;
           display: inline-block;
           letter-spacing: 0.05rem;

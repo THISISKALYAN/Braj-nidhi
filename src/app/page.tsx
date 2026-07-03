@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 
 const FloatingWidgets = dynamic(() => import('@/components/FloatingWidgets'), { ssr: false });
 const BookNowButton = dynamic(() => import('@/components/BookNowButton'), { ssr: false });
@@ -65,13 +66,28 @@ const HeroSlideshow = ({ images, mobileImages }: { images: string[]; mobileImage
               left: 0,
               width: '100%',
               height: '100%',
-              backgroundImage: `linear-gradient(to bottom, rgba(10, 14, 20, 0.45), rgba(10, 14, 20, 0.75)), url(/${currentImage})`,
-              backgroundSize: 'cover',
-              backgroundPosition: imagePositions[currentImage] ?? 'center',
-              backgroundRepeat: 'no-repeat',
               pointerEvents: isActive ? 'auto' : 'none'
             }}
-          />
+          >
+            <Image 
+              src={`/${currentImage}`}
+              alt="Braj Nidhi Hero"
+              fill
+              priority={i === 0}
+              sizes="100vw"
+              quality={80}
+              style={{
+                objectFit: 'cover',
+                objectPosition: imagePositions[currentImage] ?? 'center'
+              }}
+            />
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(to bottom, rgba(10, 14, 20, 0.45), rgba(10, 14, 20, 0.75))',
+              zIndex: 1
+            }} />
+          </motion.div>
         );
       })}
     </>
@@ -95,10 +111,8 @@ const RoomCardSlideshow = ({ images, alt, interval = 4000 }: { images: string[];
         const isActive = imgIndex === i;
         const isPrev = (imgIndex - 1 + images.length) % images.length === i;
         return (
-          <motion.img
+          <motion.div
             key={img}
-            src={img}
-            alt={alt}
             className="room-bg-img"
             initial={false}
             animate={{ 
@@ -110,8 +124,15 @@ const RoomCardSlideshow = ({ images, alt, interval = 4000 }: { images: string[];
               opacity: { duration: 1.4, ease: 'easeInOut' },
               scale: { duration: 8, ease: 'linear' }
             }}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: isActive ? 'auto' : 'none' }}
-          />
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: isActive ? 'auto' : 'none' }}
+          >
+            <Image 
+              src={`/${img}`}
+              alt={alt}
+              fill
+              style={{ objectFit: 'cover', objectPosition: 'center' }}
+            />
+          </motion.div>
         );
       })}
     </>
@@ -152,6 +173,9 @@ export default function Home() {
   const deluxe3Images = ["t1.webp", "t2.webp", "t3.webp", "t4.webp"];
   const deluxe4Images = ["f1.webp", "f2.webp", "f3.webp"];
   const heroImages = [
+    "m1.webp",
+    "m2.webp",
+    "m3.webp",
     "h11.webp",
     "DSC09652.webp",
     "DSC09672.webp",
@@ -162,13 +186,8 @@ export default function Home() {
   ];
   const mobileHeroImages = ["m1.webp", "m2.webp", "m3.webp"];
 
-  // Preload hero images on mount to ensure smooth, flicker-free transitions
-  useEffect(() => {
-    [...heroImages, ...mobileHeroImages].forEach((imgSrc) => {
-      const img = new Image();
-      img.src = `/${imgSrc}`;
-    });
-  }, []);
+  // Removed aggressive preloading to fix enormous network payloads and LCP issue.
+  // Next.js <Image> with priority={true} on the first slide handles LCP optimally.
 
   const roomPrices: Record<string, number> = {
     'Deluxe 2 – Twin Bedded Room': 3500,
@@ -511,14 +530,14 @@ Event: ${bookingData.eventType}`);
 
     <header id="main-header" className={scrolled ? "scrolled" : ""}>
         <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img loading="lazy" decoding="async" src="/sp logo.png" alt="Srila Prabhupada" style={{ height: '60px', width: 'auto', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
+            <Image src="/sp logo.webp" alt="Srila Prabhupada" width={100} height={60} style={{ height: '60px', width: 'auto', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: '55px', width: 'auto', display: 'block' }} />
+              <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={165} height={55} style={{ height: '55px', width: 'auto', display: 'block' }} />
             </Link>
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
+              <Image src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" width={50} height={50} style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
             </Link>
           </div>
         
@@ -540,7 +559,7 @@ Event: ${bookingData.eventType}`);
         <div className="mobile-header-actions">
             <button
               className="mobile-menu-btn"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() = aria-label="Open menu"> setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -553,9 +572,9 @@ Event: ${bookingData.eventType}`);
         <div className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()}>
           <div className="mobile-menu-header">
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: "45px", width: "auto" }} />
+              <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={135} height={45} style={{ height: "45px", width: "auto" }} />
             </Link>
-            <button className="mobile-menu-close" onClick={() => setIsMobileMenuOpen(false)}>
+            <button className="mobile-menu-close" onClick={() = aria-label="Close menu"> setIsMobileMenuOpen(false)}>
               <X size={24} />
             </button>
           </div>
@@ -576,6 +595,7 @@ Event: ${bookingData.eventType}`);
     )}
 
     <main>
+        <h1 className="visually-hidden" style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>Braj Nidhi Guesthouse</h1>
         <section className="hero">
             <div className="hero-slider-container">
                 <HeroSlideshow images={heroImages} mobileImages={mobileHeroImages} />
@@ -995,7 +1015,7 @@ Event: ${bookingData.eventType}`);
 
                 {/*  Offer Card 2  */}
                 <div className="offer-card immersive">
-                    <img loading="lazy" decoding="async" src="0e8512e05fcc4674c32b279cd6aa7031.jpg.webp" alt="Royal Wedding" className="offer-bg-img" />
+                    <Image src="/0e8512e05fcc4674c32b279cd6aa7031.webp.webp" alt="Royal Wedding" fill style={{ objectFit: 'cover' }} className="offer-bg-img" />
                     <div className="offer-gradient-blur"></div>
                     
                     <div className="offer-content">
@@ -1013,7 +1033,7 @@ Event: ${bookingData.eventType}`);
 
                 {/*  Offer Card 3  */}
                 <div className="offer-card immersive">
-                    <img loading="lazy" decoding="async" src="guestroom-1.webp" alt="Weekend Serenity" className="offer-bg-img" />
+                    <Image src="/guestroom-1.webp" alt="Weekend Serenity" fill style={{ objectFit: 'cover' }} className="offer-bg-img" />
                     <div className="offer-gradient-blur"></div>
                     
                     <div className="offer-content">
@@ -1040,7 +1060,7 @@ Event: ${bookingData.eventType}`);
                 <div className="about-hotel-content">
                     <div className="about-hotel-text">
                         <p>Situated about 25 minutes' walk from the Gaudiya Vaishnava Krishna Balaram Temple Complex, Braj Nidhi Guesthouse offers a peaceful sanctuary with a range of modern amenities. The guesthouse features cars for rent, as well as Wi-Fi in public areas.</p>
-                        <p>The magnificent Prem Mandir is just a 5-minute walk (500m) away, and the historic ISKCON Temple is only 1.2 km from this Vrindavan stay. Other key spiritual landmarks nearby include the revered Banke Bihari Temple (3.6 km) and the sacred forest of Nidhivan (3.5 km). You will find the Braj Nidhi Guesthouse approximately 12 km from Mathura Railway Station and 160 km from Delhi International Airport.</p>
+                        <p>The magnificent Prem Mandir is just a 5-minute walk (500m) away, and the historic ISKCON Temple is only 1.2 km from this Vrindavan stay. Other key spiritual landmarks nearby include the revered Banke Bihari Temple (7.7 km, a 20-minute ride) and the sacred forest of Nidhivan (3.5 km). You will find the Braj Nidhi Guesthouse approximately 12 km from Mathura Railway Station and 160 km from Delhi International Airport.</p>
                         <p>Offering a multi-channel TV, the rooms come with air conditioning to ensure a comfortable stay. Also, there is a personal safe, a minibar fridge and coffee/tea making facilities provided. Bathroom amenities include a modern shower and separate toilet, along with premium comforts.</p>
                         <p>The Guesthouse features a daily continental breakfast. You can visit our in-house restaurant for breakfast and eat authentic vegetarian dishes. Offering city views, an Indian restaurant is located onsite. There are also various dining options serving multiple cuisines approximately a 5-minute walk away.</p>
                     </div>
@@ -1081,41 +1101,41 @@ Event: ${bookingData.eventType}`);
             </div>
             <div className="gallery-slider swiper">
                 <div className="swiper-wrapper">
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/m1.webp" alt="Vrindavan Chandrodaya Mandir" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/m1.webp" alt="Vrindavan Chandrodaya Mandir" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/m2.webp" alt="Gallery View M2" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/m2.webp" alt="Gallery View M2" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/m3.webp" alt="Gallery View M3" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/m3.webp" alt="Gallery View M3" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/hero.webp" alt="Braj Nidhi Hero View" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/hero.webp" alt="Braj Nidhi Hero View" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/DSC09672.webp" alt="Gallery View 1" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/DSC09672.webp" alt="Gallery View 1" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/DSC09652.webp" alt="Gallery View 2" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/DSC09652.webp" alt="Gallery View 2" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/DSC02591.webp" alt="Gallery View 3" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/DSC02591.webp" alt="Gallery View 3" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/DSC06003-HDR.webp" alt="Gallery View 4" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/DSC06003-HDR.webp" alt="Gallery View 4" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/DSC05963-HDR.webp" alt="Gallery View 5" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/DSC05963-HDR.webp" alt="Gallery View 5" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/d3.webp" alt="Gallery View 6" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/d3.webp" alt="Gallery View 6" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/351.webp" alt="Gallery View 7" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/351.webp" alt="Gallery View 7" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide">
-                        <img loading="lazy" decoding="async" src="/352.webp" alt="Gallery View 8" />
+                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <Image src="/352.webp" alt="Gallery View 8" fill style={{ objectFit: 'cover' }} />
                     </div>
                 </div>
                 {/*  Navigation Buttons  */}
@@ -1195,7 +1215,7 @@ Event: ${bookingData.eventType}`);
                     <div className="testimonial-user">
                         <img loading="lazy" decoding="async" src="https://ui-avatars.com/api/?name=Anjali+Sharma&background=6b8f5e&color=fff&size=150" alt="Anjali Sharma" />
                         <div>
-                            <h4>Anjali Sharma</h4>
+                            <h3>Anjali Sharma</h3>
                             <span>Family Trip</span>
                         </div>
                     </div>
@@ -1208,7 +1228,7 @@ Event: ${bookingData.eventType}`);
                     <div className="testimonial-user">
                         <img loading="lazy" decoding="async" src="https://ui-avatars.com/api/?name=Rajesh+Kumar&background=d4af37&color=fff&size=150" alt="Rajesh Kumar" />
                         <div>
-                            <h4>Rajesh Kumar</h4>
+                            <h3>Rajesh Kumar</h3>
                             <span>Spiritual Retreat</span>
                         </div>
                     </div>
@@ -1221,7 +1241,7 @@ Event: ${bookingData.eventType}`);
                     <div className="testimonial-user">
                         <img loading="lazy" decoding="async" src="https://ui-avatars.com/api/?name=Kavita+Singh&background=6b8f5e&color=fff&size=150" alt="Kavita Singh" />
                         <div>
-                            <h4>Kavita Singh</h4>
+                            <h3>Kavita Singh</h3>
                             <span>Weekend Getaway</span>
                         </div>
                     </div>
@@ -1234,7 +1254,7 @@ Event: ${bookingData.eventType}`);
                     <div className="testimonial-user">
                         <img loading="lazy" decoding="async" src="https://ui-avatars.com/api/?name=Vikram+Verma&background=d4af37&color=fff&size=150" alt="Vikram Verma" />
                         <div>
-                            <h4>Vikram Verma</h4>
+                            <h3>Vikram Verma</h3>
                             <span>Solo Traveler</span>
                         </div>
                     </div>
@@ -1247,7 +1267,7 @@ Event: ${bookingData.eventType}`);
                     <div className="testimonial-user">
                         <img loading="lazy" decoding="async" src="https://ui-avatars.com/api/?name=Priya+Patel&background=6b8f5e&color=fff&size=150" alt="Priya Patel" />
                         <div>
-                            <h4>Priya Patel</h4>
+                            <h3>Priya Patel</h3>
                             <span>Family Vacation</span>
                         </div>
                     </div>
@@ -1260,7 +1280,7 @@ Event: ${bookingData.eventType}`);
                     <div className="testimonial-user">
                         <img loading="lazy" decoding="async" src="https://ui-avatars.com/api/?name=Amit+Desai&background=d4af37&color=fff&size=150" alt="Amit Desai" />
                         <div>
-                            <h4>Amit Desai</h4>
+                            <h3>Amit Desai</h3>
                             <span>Pilgrimage</span>
                         </div>
                     </div>
@@ -1293,7 +1313,7 @@ Event: ${bookingData.eventType}`);
                             <i className="fas fa-chevron-down"></i>
                         </div>
                         <div className="faq-answer">
-                            <p>Yes, we are located within 1.5 km of the Bankey Bihari Temple, making it a quick 5-minute e-rickshaw ride or a pleasant walk.</p>
+                            <p>Yes, Bankey Bihari Temple is located approximately 7.7 km from the guesthouse, making it a comfortable 20-minute ride.</p>
                         </div>
                     </div>
                     <div className="faq-item">
@@ -1362,7 +1382,7 @@ Event: ${bookingData.eventType}`);
                             </div>
                         </div>
                         <div className="flip-card-back">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6974793!3d27.5815647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39736fc201c10711%3A0xbcc1c54b2ce8f41e!2sShri%20Bankey%20Bihari%20Ji%20Temple%2C%20Vrindavan!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe title="Embedded Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6974793!3d27.5815647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39736fc201c10711%3A0xbcc1c54b2ce8f41e!2sShri%20Bankey%20Bihari%20Ji%20Temple%2C%20Vrindavan!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                             <div className="flip-back-hint"><i className="fas fa-undo"></i> Click to flip back</div>
                         </div>
                     </div>
@@ -1390,7 +1410,7 @@ Event: ${bookingData.eventType}`);
                             </div>
                         </div>
                         <div className="flip-card-back">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6774793!3d27.5615647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sPrem%20Mandir!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe title="Embedded Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6774793!3d27.5615647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sPrem%20Mandir!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                             <div className="flip-back-hint"><i className="fas fa-undo"></i> Click to flip back</div>
                         </div>
                     </div>
@@ -1418,7 +1438,7 @@ Event: ${bookingData.eventType}`);
                             </div>
                         </div>
                         <div className="flip-card-back">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6874793!3d27.5715647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sISKCON%20Vrindavan!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe title="Embedded Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6874793!3d27.5715647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sISKCON%20Vrindavan!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                             <div className="flip-back-hint"><i className="fas fa-undo"></i> Click to flip back</div>
                         </div>
                     </div>
@@ -1428,7 +1448,7 @@ Event: ${bookingData.eventType}`);
                 <div className="attraction-card" onClick={(e) => e.currentTarget.classList.toggle('flipped')}>
                     <div className="flip-card-inner">
                         <div className="flip-card-front">
-                            <img loading="lazy" decoding="async" src="/nidhi van , Vrindavan.webp" alt="Nidhivan" className="attraction-bg" />
+                            <img loading="lazy" decoding="async" src="/nidhivan.webp" alt="Nidhivan" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
                             <div className="distance-pill">3.55 km</div>
                             <div className="attraction-content">
@@ -1446,7 +1466,7 @@ Event: ${bookingData.eventType}`);
                             </div>
                         </div>
                         <div className="flip-card-back">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6984793!3d27.5825647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sNidhivan!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe title="Embedded Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6984793!3d27.5825647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sNidhivan!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                             <div className="flip-back-hint"><i className="fas fa-undo"></i> Click to flip back</div>
                         </div>
                     </div>
@@ -1456,7 +1476,7 @@ Event: ${bookingData.eventType}`);
                 <div className="attraction-card" onClick={(e) => e.currentTarget.classList.toggle('flipped')}>
                     <div className="flip-card-inner">
                         <div className="flip-card-front">
-                            <img loading="lazy" decoding="async" src="/%23Vrindavan.jpg" alt="Radha Raman Temple" className="attraction-bg" />
+                            <img loading="lazy" decoding="async" src="/radha-raman-temple.webp" alt="Radha Raman Temple" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
                             <div className="distance-pill">3.45 km</div>
                             <div className="attraction-content">
@@ -1474,7 +1494,7 @@ Event: ${bookingData.eventType}`);
                             </div>
                         </div>
                         <div className="flip-card-back">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6994793!3d27.5835647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sRadha%20Raman%20Temple!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe title="Embedded Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6994793!3d27.5835647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sRadha%20Raman%20Temple!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                             <div className="flip-back-hint"><i className="fas fa-undo"></i> Click to flip back</div>
                         </div>
                     </div>
@@ -1484,7 +1504,7 @@ Event: ${bookingData.eventType}`);
                 <div className="attraction-card" onClick={(e) => e.currentTarget.classList.toggle('flipped')}>
                     <div className="flip-card-inner">
                         <div className="flip-card-front">
-                            <img loading="lazy" decoding="async" src="/Samadhi temple of neem karoli baba, Vrindavan.webp" alt="Neem Karoli Ashram" className="attraction-bg" />
+                            <img loading="lazy" decoding="async" src="/neem-karoli-baba.webp" alt="Neem Karoli Ashram" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
                             <div className="distance-pill">2.72 km</div>
                             <div className="attraction-content">
@@ -1502,7 +1522,7 @@ Event: ${bookingData.eventType}`);
                             </div>
                         </div>
                         <div className="flip-card-back">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6914793!3d27.5845647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sNeem%20Karoli%20Baba%20Ashram!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe title="Embedded Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6914793!3d27.5845647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sNeem%20Karoli%20Baba%20Ashram!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                             <div className="flip-back-hint"><i className="fas fa-undo"></i> Click to flip back</div>
                         </div>
                     </div>
@@ -1512,7 +1532,7 @@ Event: ${bookingData.eventType}`);
                 <div className="attraction-card" onClick={(e) => e.currentTarget.classList.toggle('flipped')}>
                     <div className="flip-card-inner">
                         <div className="flip-card-front">
-                            <img loading="lazy" decoding="async" src="/Raman Reti, Vrindavan.webp" alt="Raman Reti" className="attraction-bg" />
+                            <img loading="lazy" decoding="async" src="/raman-reti.webp" alt="Raman Reti" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
                             <div className="distance-pill">15.39 km</div>
                             <div className="attraction-content">
@@ -1530,7 +1550,7 @@ Event: ${bookingData.eventType}`);
                             </div>
                         </div>
                         <div className="flip-card-back">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.7214793!3d27.4845647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sRaman%20Reti!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe title="Embedded Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.7214793!3d27.4845647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sRaman%20Reti!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                             <div className="flip-back-hint"><i className="fas fa-undo"></i> Click to flip back</div>
                         </div>
                     </div>
@@ -1540,7 +1560,7 @@ Event: ${bookingData.eventType}`);
                 <div className="attraction-card" onClick={(e) => e.currentTarget.classList.toggle('flipped')}>
                     <div className="flip-card-inner">
                         <div className="flip-card-front">
-                            <img loading="lazy" decoding="async" src="/Nandgaon holi %23vrindavan.jpg" alt="Shri Nand Baba Temple" className="attraction-bg" />
+                            <img loading="lazy" decoding="async" src="/nandgaon-holi.webp" alt="Shri Nand Baba Temple" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
                             <div className="distance-pill">31.64 km</div>
                             <div className="attraction-content">
@@ -1555,7 +1575,7 @@ Event: ${bookingData.eventType}`);
                             </div>
                         </div>
                         <div className="flip-card-back">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.4214793!3d27.7845647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sShri%20Nand%20Baba%20Temple!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe title="Embedded Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.4214793!3d27.7845647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sShri%20Nand%20Baba%20Temple!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                             <div className="flip-back-hint"><i className="fas fa-undo"></i> Click to flip back</div>
                         </div>
                     </div>
@@ -1565,7 +1585,7 @@ Event: ${bookingData.eventType}`);
                 <div className="attraction-card" onClick={(e) => e.currentTarget.classList.toggle('flipped')}>
                     <div className="flip-card-inner">
                         <div className="flip-card-front">
-                            <img loading="lazy" decoding="async" src="/vishram-ghat.jpg" alt="Vishram Ghat Mathura" className="attraction-bg" />
+                            <img loading="lazy" decoding="async" src="/vishram-ghat.webp" alt="Vishram Ghat Mathura" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
                             <div className="distance-pill">12.5 km</div>
                             <div className="attraction-content">
@@ -1580,7 +1600,7 @@ Event: ${bookingData.eventType}`);
                             </div>
                         </div>
                         <div className="flip-card-back">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6814793!3d27.5045647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sVishram%20Ghat!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe title="Embedded Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6814793!3d27.5045647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sVishram%20Ghat!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                             <div className="flip-back-hint"><i className="fas fa-undo"></i> Click to flip back</div>
                         </div>
                     </div>
@@ -1590,7 +1610,7 @@ Event: ${bookingData.eventType}`);
                 <div className="attraction-card" onClick={(e) => e.currentTarget.classList.toggle('flipped')}>
                     <div className="flip-card-inner">
                         <div className="flip-card-front">
-                            <img loading="lazy" decoding="async" src="/📍Shri Banke Bihari Mandir, Vrindavan.webp" alt="Shri Banke Bihari Mandir" className="attraction-bg" />
+                            <img loading="lazy" decoding="async" src="/banke-bihari-mandir.webp" alt="Shri Banke Bihari Mandir" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
                             <div className="distance-pill">3.69 km</div>
                             <div className="attraction-content">
@@ -1605,7 +1625,7 @@ Event: ${bookingData.eventType}`);
                             </div>
                         </div>
                         <div className="flip-card-back">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6974793!3d27.5815647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39736fc201c10711%3A0xbcc1c54b2ce8f41e!2sShri%20Bankey%20Bihari%20Ji%20Temple%2C%20Vrindavan!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe title="Embedded Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.8665045058414!2d77.6974793!3d27.5815647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39736fc201c10711%3A0xbcc1c54b2ce8f41e!2sShri%20Bankey%20Bihari%20Ji%20Temple%2C%20Vrindavan!5e0!3m2!1sen!2sin!4v1714486500000!5m2!1sen!2sin" width="100%" height="100%" style={{"border":"0"}} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                             <div className="flip-back-hint"><i className="fas fa-undo"></i> Click to flip back</div>
                         </div>
                     </div>
@@ -1619,7 +1639,7 @@ Event: ${bookingData.eventType}`);
             <div className="cta-card">
                 <div className="cta-content">
                     <span className="cta-badge">Get Started Today</span>
-                    <h1>Your Divine Journey Starts With<br />a Peaceful Stay</h1>
+                    <h2>Your Divine Journey Starts With<br />a Peaceful Stay</h2>
                     <p>Connect with our hospitality team to find the perfect room for your pilgrimage.<br />We're here to help!</p>
                     <a href="#contact" className="cta-btn">Reserve Your Stay</a>
                 </div>

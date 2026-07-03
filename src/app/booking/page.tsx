@@ -797,14 +797,14 @@ export default function BookingPage() {
         .booking-page-mmt {
           background: #f4f6f8;
           color: #000000;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           min-height: 100vh;
           padding-top: 120px;
           padding-bottom: 0;
         }
 
         .booking-page-mmt * {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
         }
         .booking-page-mmt h1,
         .booking-page-mmt h2,
@@ -812,7 +812,7 @@ export default function BookingPage() {
         .booking-page-mmt h4,
         .booking-page-mmt h5,
         .booking-page-mmt h6 {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-weight: 400 !important;
           color: #000000;
           letter-spacing: 0.5px;
@@ -834,14 +834,14 @@ export default function BookingPage() {
           border-bottom: 1px solid rgba(212, 175, 55, 0.15);
         }
         .booking-page-mmt header nav ul li a {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: 1.25rem !important;
           font-weight: 400 !important;
           letter-spacing: 0.05em !important;
           color: #000000 !important;
         }
         .booking-page-mmt header .nav-btns .btn-book {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: 1.25rem !important;
           font-weight: 400 !important;
           letter-spacing: 0.05em !important;
@@ -1047,7 +1047,7 @@ export default function BookingPage() {
           font-size: 18px;
           font-weight: 700;
           color: #000000;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           display: flex;
           align-items: center;
           gap: 10px;
@@ -1151,7 +1151,7 @@ export default function BookingPage() {
           color: #ffffff;
           font-weight: 700;
           font-size: 14px;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           border-radius: 8px;
           border: none;
           cursor: pointer;
@@ -1250,7 +1250,7 @@ export default function BookingPage() {
           letter-spacing: 0.5px;
           text-transform: uppercase;
           margin: 0;
-          font-family: 'Bebas Neue', 'Outfit', sans-serif;
+          font-family: var(--font-bebas-neue), var(--font-outfit), sans-serif;
           line-height: 1.1;
         }
 
@@ -1559,7 +1559,7 @@ export default function BookingPage() {
           font-size: 18px;
           font-weight: 800;
           color: #1d6de5;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
         }
 
         .form-grid-mmt {
@@ -1589,7 +1589,7 @@ export default function BookingPage() {
           margin-bottom: 6px;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
         }
 
         .input-wrapper-mmt input,
@@ -1600,7 +1600,7 @@ export default function BookingPage() {
           border-radius: 8px;
           padding: 12px 14px;
           font-size: 14px;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           color: #000000;
           outline: none;
           transition: all 0.2s ease;
@@ -1759,7 +1759,7 @@ export default function BookingPage() {
           font-size: 18px;
           font-weight: 700;
           color: #000000;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           display: flex;
           align-items: center;
           gap: 8px;
@@ -1788,7 +1788,7 @@ export default function BookingPage() {
           font-size: 18px;
           font-weight: 800;
           color: #000000;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
         }
         .summary-row-mmt.total span:last-child {
           color: #1d6de5;
@@ -1834,7 +1834,7 @@ export default function BookingPage() {
           border-radius: 10px;
           font-weight: 700;
           font-size: 16px;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           cursor: pointer;
           margin-top: 20px;
           transition: all 0.25s ease;
@@ -2199,7 +2199,7 @@ export default function BookingPage() {
         .conf-action-pills { display: flex; gap: 12px; margin-top: 10px; }
         /* ── Add to Calendar button ── */
         .atc-btn { display: flex; justify-content: center; align-items: center; padding: 9px 12px; gap: 8px; height: 40px; width: 201px; border: none; background: #FF342B; border-radius: 20px; cursor: pointer; }
-        .atc-btn .atc-label { line-height: 22px; font-size: 17px; color: #fff; font-family: 'Outfit', sans-serif; letter-spacing: 1px; }
+        .atc-btn .atc-label { line-height: 22px; font-size: 17px; color: #fff; font-family: var(--font-outfit), sans-serif; letter-spacing: 1px; }
         .atc-btn:hover { background: #e52e26; }
         .atc-btn:hover .atc-icon { animation: atc-slope 1s linear infinite; }
         @keyframes atc-slope { 50% { transform: rotate(10deg); } }
@@ -2208,7 +2208,7 @@ export default function BookingPage() {
         .conf-left-image { width: 100%; height: 200px; object-fit: cover; display: block; }
         .conf-left-body { padding: 22px; }
         .conf-room-title-line { display: flex; flex-direction: column; gap: 5px; padding-bottom: 16px; border-bottom: 1px solid rgba(212,175,55,0.1); margin-bottom: 16px; }
-        .conf-room-title-line h3 { font-size: 18px; font-weight: 800; color: #000000; margin: 0; font-family: 'Bebas Neue', cursive; letter-spacing: 0.5px; }
+        .conf-room-title-line h3 { font-size: 18px; font-weight: 800; color: #000000; margin: 0; font-family: var(--font-bebas-neue), cursive; letter-spacing: 0.5px; }
         .conf-room-title-line span { font-size: 13px; color: #6B7280; font-weight: 500; }
         .conf-price-row { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid rgba(212,175,55,0.1); margin-bottom: 16px; }
         .conf-price-tag { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 700; color: #000000; }
@@ -2239,7 +2239,7 @@ export default function BookingPage() {
         .conf-paid-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: #16a34a; font-weight: 700; margin-top: 10px; padding: 5px 11px; background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.22); border-radius: 999px; }
         .conf-bottom-actions { display: flex; align-items: center; gap: 20px; margin-top: 24px; flex-wrap: wrap; }
         /* ── Return to Home button ── */
-        .rth-btn { position: relative; overflow: hidden; border: 1px solid #18181a; color: #18181a; display: inline-block; font-size: 15px; line-height: 15px; padding: 18px 28px 17px; cursor: pointer; background: #fff; user-select: none; font-family: 'Outfit', sans-serif; font-weight: 600; text-decoration: none; }
+        .rth-btn { position: relative; overflow: hidden; border: 1px solid #18181a; color: #18181a; display: inline-block; font-size: 15px; line-height: 15px; padding: 18px 28px 17px; cursor: pointer; background: #fff; user-select: none; font-family: var(--font-outfit), sans-serif; font-weight: 600; text-decoration: none; }
         .rth-btn span:first-child { position: relative; transition: color 600ms cubic-bezier(0.48, 0, 0.12, 1); z-index: 10; }
         .rth-btn span:last-child { color: white; display: block; position: absolute; bottom: 0; transition: all 500ms cubic-bezier(0.48, 0, 0.12, 1); z-index: 100; opacity: 0; top: 50%; left: 50%; transform: translateY(225%) translateX(-50%); height: 14px; line-height: 13px; white-space: nowrap; }
         .rth-btn::after { content: ""; position: absolute; bottom: -50%; left: 0; width: 100%; height: 100%; background-color: black; transform-origin: bottom center; transition: transform 600ms cubic-bezier(0.48, 0, 0.12, 1); transform: skewY(9.3deg) scaleY(0); z-index: 50; }
@@ -2250,7 +2250,7 @@ export default function BookingPage() {
         .vb-borders { position: relative; width: fit-content; height: fit-content; }
         .vb-borders::before { content: ""; position: absolute; width: calc(100% + 0.5em); height: 50%; left: -0.3em; top: -0.3em; border: 1px solid #0E1822; border-bottom: 0; }
         .vb-borders::after { content: ""; position: absolute; width: calc(100% + 0.5em); height: 50%; left: -0.3em; bottom: -0.3em; border: 1px solid #0E1822; border-top: 0; z-index: 0; }
-        .vb-btn { font-family: 'Outfit', sans-serif; color: white; cursor: pointer; font-size: 13px; font-weight: 700; letter-spacing: 0.05rem; border: 1px solid #0E1822; padding: 0.8rem 2.1rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 531.28 200'%3E%3Cpolygon fill='%23FF4655' points='415.81 200 0 200 115.47 0 531.28 0 415.81 200'/%3E%3C/svg%3E"); background-color: #0E1822; background-size: 200%; background-position: 200%; background-repeat: no-repeat; transition: background-position 0.3s ease-in-out, border 0.3s ease-in-out, color 0.3s ease-in-out; position: relative; z-index: 1; }
+        .vb-btn { font-family: var(--font-outfit), sans-serif; color: white; cursor: pointer; font-size: 13px; font-weight: 700; letter-spacing: 0.05rem; border: 1px solid #0E1822; padding: 0.8rem 2.1rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 531.28 200'%3E%3Cpolygon fill='%23FF4655' points='415.81 200 0 200 115.47 0 531.28 0 415.81 200'/%3E%3C/svg%3E"); background-color: #0E1822; background-size: 200%; background-position: 200%; background-repeat: no-repeat; transition: background-position 0.3s ease-in-out, border 0.3s ease-in-out, color 0.3s ease-in-out; position: relative; z-index: 1; }
         .vb-btn:hover { border: 1px solid #FF4655; color: white; background-position: 40%; }
         .vb-btn::before { content: ""; position: absolute; background-color: #0E1822; width: 0.2rem; height: 0.2rem; top: -1px; left: -1px; transition: background-color 0.15s ease-in-out; }
         .vb-btn::after { content: ""; position: absolute; background-color: #FF4655; width: 0.3rem; height: 0.3rem; bottom: -1px; right: -1px; transition: background-color 0.15s ease-in-out; }
@@ -2277,7 +2277,7 @@ export default function BookingPage() {
           width: 100% !important;
         }
         .booking-page-mmt .footer-col h3 {
-          font-family: 'Outfit', sans-serif !important;
+          font-family: var(--font-outfit), sans-serif !important;
           font-size: 1.1rem !important;
           font-weight: 700 !important;
           color: #111 !important;
@@ -2286,7 +2286,7 @@ export default function BookingPage() {
         }
         .booking-page-mmt .site-footer .footer-col a {
           display: block !important;
-          font-family: 'Outfit', sans-serif !important;
+          font-family: var(--font-outfit), sans-serif !important;
           color: #666 !important;
           text-decoration: none !important;
           margin-bottom: 15px !important;
@@ -2306,14 +2306,14 @@ export default function BookingPage() {
           max-width: 1400px !important;
           margin: 0 auto !important;
           width: 100% !important;
-          font-family: 'Outfit', sans-serif !important;
+          font-family: var(--font-outfit), sans-serif !important;
           font-size: 0.9rem !important;
           color: #666 !important;
           font-weight: 500 !important;
         }
         .booking-page-mmt .site-footer .footer-middle-bar a,
         .booking-page-mmt .site-footer .footer-middle-bar span {
-          font-family: 'Outfit', sans-serif !important;
+          font-family: var(--font-outfit), sans-serif !important;
           color: #666 !important;
         }
         .booking-page-mmt .site-footer .footer-middle-bar a:hover {
@@ -2374,14 +2374,14 @@ export default function BookingPage() {
       {/* 1. STUNNING HEADER NAVIGATION IN MMT STYLE */}
       <header id="main-header" className={headerScrolled ? "scrolled" : ""}>
         <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img loading="lazy" decoding="async" src="/sp logo.png" alt="Srila Prabhupada" style={{ height: '60px', width: 'auto', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
+            <Image src="/sp logo.webp" alt="Srila Prabhupada" width={100} height={60} style={{ height: '60px', width: 'auto', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: '55px', width: 'auto', display: 'block' }} />
+              <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={165} height={55} style={{ height: '55px', width: 'auto', display: 'block' }} />
             </Link>
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
+              <Image src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" width={50} height={50} style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
             </Link>
           </div>
         
@@ -2401,7 +2401,7 @@ export default function BookingPage() {
 
         {/* Mobile Header Actions Wrapper */}
         <div className="mobile-header-actions">
-            <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <button className="mobile-menu-btn" onClick={() = aria-label="Open menu"> setIsMobileMenuOpen(!isMobileMenuOpen)}>
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
         </div>
@@ -2412,8 +2412,8 @@ export default function BookingPage() {
         <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}>
           <div className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="mobile-menu-header">
-              <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: "45px", width: "auto" }} />
-              <button className="mobile-menu-close" onClick={() => setIsMobileMenuOpen(false)}>
+              <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={135} height={45} style={{ height: "45px", width: "auto" }} />
+              <button className="mobile-menu-close" onClick={() = aria-label="Close menu"> setIsMobileMenuOpen(false)}>
                 <X size={24} />
               </button>
             </div>
@@ -2444,7 +2444,7 @@ export default function BookingPage() {
             <div>
               
               {/* MMT-style review heading */}
-              <h2 style={{ fontSize: '36px', fontFamily: 'Bebas Neue, cursive', fontWeight: 400, letterSpacing: '0.5px', color: '#000', marginBottom: '20px', marginTop: '0' }}>Review your Booking</h2>
+              <h2 style={{ fontSize: '36px', fontFamily: 'var(--font-bebas-neue), cursive', fontWeight: 400, letterSpacing: '0.5px', color: '#000', marginBottom: '20px', marginTop: '0' }}>Review your Booking</h2>
 
               {/* Hotel + Stay Summary Card */}
               <div className="mmt-card" style={{ marginBottom: '16px', padding: '20px 24px' }}>
@@ -3246,7 +3246,7 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
                         <div className="conf-ref-badge"><Check size={10} />{bookingRef}</div>
                       </div>
                       <div className="conf-property-box">
-                        <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi" className="conf-property-avatar" />
+                        <img loading="lazy" decoding="async" src="/Braj_nidhi_.webp" alt="Braj Nidhi" className="conf-property-avatar" />
                         <div className="conf-property-details">
                           <h4>Braj Nidhi Guesthouse</h4>
                           <span>Vrindavan, UP</span>
@@ -3470,7 +3470,7 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
                   font-size: 14px;
                   background: #fff;
                   outline: none;
-                  font-family: 'Outfit', sans-serif;
+                  font-family: var(--font-outfit), sans-serif;
                   box-sizing: border-box;
                   min-width: 0;
                   transition: border-color 0.15s, box-shadow 0.15s;
@@ -3492,7 +3492,7 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
                   color: #fff;
                   cursor: pointer;
                   letter-spacing: 0.8px;
-                  font-family: 'Outfit', sans-serif;
+                  font-family: var(--font-outfit), sans-serif;
                   text-transform: uppercase;
                   transition: background 0.2s, transform 0.1s;
                 }

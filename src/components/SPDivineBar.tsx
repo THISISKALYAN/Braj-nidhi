@@ -31,7 +31,7 @@ export default function SPDivineBar() {
         background: "transparent",
       }}
     >
-      <img loading="lazy" decoding="async" src="/sp logo.png"
+      <img loading="lazy" decoding="async" src="/sp logo.webp"
         alt="His Divine Grace Srila Prabhupada"
         style={{
           height: "68px",

@@ -26,7 +26,7 @@ export default function LoginJoinButton({ onClick, className = '', label = 'Logi
           background-image: none;
           color: #fff;
           cursor: pointer;
-          font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+          font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
           font-size: 13px;
           font-weight: 900;
           letter-spacing: 0.08em;
@@ -56,7 +56,7 @@ export default function LoginJoinButton({ onClick, className = '', label = 'Logi
           font-weight: 900;
           letter-spacing: 0.08em;
           text-transform: uppercase;
-          font-family: 'Outfit', ui-sans-serif, sans-serif;
+          font-family: var(--font-outfit), ui-sans-serif, sans-serif;
         }
         .ljb-btn:hover span {
           transform: rotateX(35deg);

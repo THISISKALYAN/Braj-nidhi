@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import {
   BedDouble, Users, Calendar, Star, MapPin, ShieldCheck, Wifi, Coffee,
@@ -189,9 +190,9 @@ function RoomsComboContent() {
     <div className="rcp">
       <style dangerouslySetInnerHTML={{ __html: `
         *{box-sizing:border-box;}
-        .rcp{background:#f4f0e8;min-height:100vh;font-family:'Outfit',sans-serif;color:#111;padding-top:88px;}
-        .rcp *{font-family:'Outfit',sans-serif;}
-        .rcp h1,.rcp h2,.rcp h3,.rcp h4{font-family:'Bebas Neue',cursive!important;font-weight:400!important;letter-spacing:.5px;color:#111;}
+        .rcp{background:#f4f0e8;min-height:100vh;font-family:var(--font-outfit),sans-serif;color:#111;padding-top:88px;}
+        .rcp *{font-family:var(--font-outfit),sans-serif;}
+        .rcp h1,.rcp h2,.rcp h3,.rcp h4{font-family:var(--font-bebas-neue),cursive!important;font-weight:400!important;letter-spacing:.5px;color:#111;}
 
         /* ── Header: solid white when not scrolled, normal pill when scrolled ── */
         .rcp #main-header:not(.scrolled) {
@@ -202,7 +203,7 @@ function RoomsComboContent() {
         }
         /* Restore Bebas Neue for nav links (overridden by .rcp * rule) */
         .rcp #main-header nav ul li a {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: 1.25rem !important;
           font-weight: 400 !important;
           letter-spacing: 0.05em !important;
@@ -298,7 +299,7 @@ function RoomsComboContent() {
         .rcp-free-cancel{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:#16a34a;margin-bottom:18px;}
         .rcp-free-cancel svg{flex-shrink:0;}
         .rcp-room-actions{display:flex;align-items:center;gap:14px;margin-top:6px;}
-        .btn-select-room{padding:14px 34px;background:linear-gradient(135deg,#1d6de5,#1557c0);color:#fff;font-size:16px;font-weight:700;font-family:'Outfit',sans-serif;border:none;border-radius:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:9px;transition:all .25s;}
+        .btn-select-room{padding:14px 34px;background:linear-gradient(135deg,#1d6de5,#1557c0);color:#fff;font-size:16px;font-weight:700;font-family:var(--font-outfit),sans-serif;border:none;border-radius:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:9px;transition:all .25s;}
         .btn-select-room:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(29,109,229,.32);}
         .rcp-room-card.selected .btn-select-room{background:linear-gradient(135deg,#16a34a,#15803d);}
         .rcp-room-card.selected .btn-select-room:hover{box-shadow:0 10px 24px rgba(22,163,74,.32);}
@@ -308,7 +309,7 @@ function RoomsComboContent() {
         /* ── Right sidebar ── */
         .rcp-sidebar{position:sticky;top:112px;}
         .rcp-side-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;box-shadow:0 2px 12px rgba(0,0,0,.06);padding:28px;margin-bottom:18px;}
-        .rcp-side-card h4{font-family:'Bebas Neue',cursive!important;font-size:22px;color:#111;margin:0 0 20px;font-weight:400!important;letter-spacing:.4px;}
+        .rcp-side-card h4{font-family:var(--font-bebas-neue),cursive!important;font-size:22px;color:#111;margin:0 0 20px;font-weight:400!important;letter-spacing:.4px;}
 
         .rcp-dates-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
         .rcp-date-box{flex:1;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;}
@@ -330,14 +331,14 @@ function RoomsComboContent() {
         .rcp-sel-sub{font-size:13px;color:#6B7280;margin-top:3px;}
         .rcp-sel-total{font-size:15px;color:#374151;margin-top:10px;padding-top:10px;border-top:1px solid #bfdbfe;}
         .rcp-sel-total strong{color:#111;}
-        .btn-book-now{width:100%;padding:17px;background:linear-gradient(135deg,#1d6de5,#1557c0);color:#fff;font-size:17px;font-weight:700;font-family:'Outfit',sans-serif;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;transition:all .25s;margin-bottom:12px;}
+        .btn-book-now{width:100%;padding:17px;background:linear-gradient(135deg,#1d6de5,#1557c0);color:#fff;font-size:17px;font-weight:700;font-family:var(--font-outfit),sans-serif;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;transition:all .25s;margin-bottom:12px;}
         .btn-book-now:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(29,109,229,.38);}
         .rcp-secure{display:flex;align-items:center;gap:7px;font-size:14px;color:#6B7280;justify-content:center;}
         .rcp-secure svg{color:#16a34a;}
         .rcp-no-select{text-align:center;padding:20px;font-size:15px;color:#9CA3AF;border:1.5px dashed #e5e7eb;border-radius:12px;margin-bottom:16px;}
 
         .rcp-policy-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:22px 26px;}
-        .rcp-policy-card h4{font-family:'Bebas Neue',cursive!important;font-size:20px;color:#111;margin:0 0 16px;font-weight:400!important;}
+        .rcp-policy-card h4{font-family:var(--font-bebas-neue),cursive!important;font-size:20px;color:#111;margin:0 0 16px;font-weight:400!important;}
         .rcp-policy-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;font-size:15px;color:#374151;}
         .rcp-policy-item svg{color:#C89B3C;flex-shrink:0;margin-top:2px;}
 
@@ -386,14 +387,14 @@ function RoomsComboContent() {
       {/* Header */}
       <header id="main-header" className={scrolled ? 'scrolled' : ''}>
         <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img loading="lazy" decoding="async" src="/sp logo.png" alt="Srila Prabhupada" style={{ height: '60px', width: 'auto', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
+            <Image src="/sp logo.webp" alt="Srila Prabhupada" width={100} height={60} style={{ height: '60px', width: 'auto', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: '55px', width: 'auto', display: 'block' }} />
+              <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={165} height={55} style={{ height: '55px', width: 'auto', display: 'block' }} />
             </Link>
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
+              <Image src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" width={50} height={50} style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
             </Link>
           </div>
         <nav>
@@ -409,7 +410,7 @@ function RoomsComboContent() {
           <BookNowButton href="/guesthouse#rooms-suites" />
         </div>
         <div className="mobile-header-actions">
-          <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          <button className="mobile-menu-btn" onClick={() = aria-label="Open menu"> setIsMobileMenuOpen(!isMobileMenuOpen)}>
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
@@ -420,8 +421,8 @@ function RoomsComboContent() {
         <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}>
           <div className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="mobile-menu-header">
-              <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: '45px', width: 'auto' }} />
-              <button className="mobile-menu-close" onClick={() => setIsMobileMenuOpen(false)}>
+              <img loading="lazy" decoding="async" src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" style={{ height: '45px', width: 'auto' }} />
+              <button className="mobile-menu-close" onClick={() = aria-label="Close menu"> setIsMobileMenuOpen(false)}>
                 <X size={24} />
               </button>
             </div>

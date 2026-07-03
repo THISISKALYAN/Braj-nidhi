@@ -85,7 +85,7 @@ export default function RoomUnavailablePopup({
             0 0 0 1px rgba(0,0,0,0.04),
             0 24px 68px rgba(0, 0, 0, 0.22),
             0 8px 20px rgba(0, 0, 0, 0.08);
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           animation: rupSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
@@ -119,7 +119,7 @@ export default function RoomUnavailablePopup({
         }
 
         .rup-title {
-          font-family: 'Bebas Neue', 'Outfit', sans-serif;
+          font-family: var(--font-bebas-neue), var(--font-outfit), sans-serif;
           font-size: 26px;
           letter-spacing: 0.8px;
           color: #b91c1c;
@@ -247,7 +247,7 @@ export default function RoomUnavailablePopup({
           font-weight: 700;
           cursor: pointer;
           border: none;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           transition: all 0.2s;
           text-decoration: none;
           display: inline-flex;

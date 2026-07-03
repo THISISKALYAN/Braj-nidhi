@@ -34,7 +34,7 @@ export default function BookNowButton({
           background-image: none;
           color: #fff;
           cursor: pointer;
-          font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+          font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
           font-size: 100%;
           line-height: 1.5;
           margin: 0;
@@ -65,7 +65,7 @@ export default function BookNowButton({
           font-weight: 900;
           letter-spacing: 0.05em;
           text-transform: uppercase;
-          font-family: 'Outfit', ui-sans-serif, sans-serif;
+          font-family: var(--font-outfit), ui-sans-serif, sans-serif;
         }
         .bnb-96:hover span {
           transform: rotateX(35deg);

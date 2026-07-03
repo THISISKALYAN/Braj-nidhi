@@ -9,6 +9,21 @@ export const metadata: Metadata = {
 
 import LoadingTransition from "@/components/LoadingTransition";
 import { MusicProvider } from "@/lib/MusicContext";
+import { Outfit, Bebas_Neue } from 'next/font/google';
+
+const outfit = Outfit({ 
+  subsets: ['latin'], 
+  weight: ['300', '400', '600', '700'],
+  variable: '--font-outfit',
+  display: 'swap',
+});
+
+const bebasNeue = Bebas_Neue({ 
+  subsets: ['latin'], 
+  weight: ['400'],
+  variable: '--font-bebas-neue',
+  display: 'swap',
+});
 
 export default function RootLayout({
   children,
@@ -16,22 +31,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${outfit.variable} ${bebasNeue.variable}`}>
       <head>
         {/* === Performance: DNS prefetch & preconnect for all external resources === */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
         
         {/* === Performance: Preload hero image to improve LCP score === */}
         <link rel="preload" as="image" href="/hero.webp" type="image/webp" />
-        
-        {/* Google Fonts — display=swap prevents FOIT (Flash of Invisible Text) */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Bebas+Neue&display=swap"
-        />
         
         <link
           rel="stylesheet"
@@ -41,15 +48,15 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"
         />
-        <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js" async></script>
       </head>
       <body className="index-page antialiased">
+        <Script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js" strategy="lazyOnload" />
         <MusicProvider>
           <LoadingTransition />
           {children}
         </MusicProvider>
         {/* Chatling AI Chatbot — inject after page is interactive so config is set first */}
-        <Script id="chatling-embed" strategy="afterInteractive">
+        <Script id="chatling-embed" strategy="lazyOnload">
           {`
             window.chtlConfig = { chatbotId: "6539271511" };
             (function() {

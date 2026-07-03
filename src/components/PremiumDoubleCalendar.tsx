@@ -199,7 +199,7 @@ export default function PremiumDoubleCalendar({
             width: 420px;
             max-height: 92vh;
             overflow-y: auto;
-            font-family: 'Outfit', sans-serif;
+            font-family: var(--font-outfit), sans-serif;
             animation: skyFade 0.18s ease forwards;
           }
           @keyframes skyFade {

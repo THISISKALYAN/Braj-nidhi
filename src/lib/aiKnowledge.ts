@@ -83,7 +83,7 @@ export const BRAJ_NIDHI_KNOWLEDGE = {
   temples: [
     {
       name: "Shri Bankey Bihari Ji Temple",
-      distance: "1.2 km away",
+      distance: "7.7 km away (20 min ride)",
       description: "The heart of Vrindavan, housing the self-manifested deity of Thakur Bankey Bihari Ji, originally worshiped by Swami Haridas.",
       timings: {
         summer: {

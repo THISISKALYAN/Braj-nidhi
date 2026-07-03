@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Menu, X, Shield, Lock, Eye, CheckCircle2, ChevronRight, Home } from "lucide-react";
 import FloatingWidgets from "@/components/FloatingWidgets";
@@ -31,7 +32,7 @@ export default function PrivacyPage() {
         .privacy-page { 
           background: #ffffff; 
           min-height: 100vh;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           color: #2c2520;
         }
 
@@ -96,7 +97,7 @@ export default function PrivacyPage() {
         }
 
         .privacy-hero h1 {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: clamp(3rem, 8vw, 5.5rem);
           color: #8b0000;
           text-transform: uppercase;
@@ -164,7 +165,7 @@ export default function PrivacyPage() {
         }
 
         .sidebar-title {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: 1.6rem;
           font-weight: 400 !important;
           text-transform: uppercase;
@@ -195,7 +196,7 @@ export default function PrivacyPage() {
         }
 
         .sidebar-badge-text h5 {
-          font-family: 'Outfit', sans-serif !important;
+          font-family: var(--font-outfit), sans-serif !important;
           font-size: 0.85rem;
           font-weight: 700;
           color: #2c2520;
@@ -267,7 +268,7 @@ export default function PrivacyPage() {
         }
 
         .details-card h2 {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: 2.2rem;
           text-transform: uppercase;
           color: #2c2520;
@@ -310,7 +311,7 @@ export default function PrivacyPage() {
         }
 
         .point-content h4 {
-          font-family: 'Outfit', sans-serif !important;
+          font-family: var(--font-outfit), sans-serif !important;
           font-size: 0.95rem;
           font-weight: 700;
           text-transform: uppercase;
@@ -348,14 +349,14 @@ export default function PrivacyPage() {
 
       <header id="main-header" className={scrolled ? "scrolled" : ""}>
         <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img loading="lazy" decoding="async" src="/sp logo.png" alt="Srila Prabhupada" style={{ height: '60px', width: 'auto', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
+            <Image src="/sp logo.webp" alt="Srila Prabhupada" width={100} height={60} style={{ height: '60px', width: 'auto', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: '55px', width: 'auto', display: 'block' }} />
+              <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={165} height={55} style={{ height: '55px', width: 'auto', display: 'block' }} />
             </Link>
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
+              <Image src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" width={50} height={50} style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
             </Link>
           </div>
         <nav>
@@ -372,7 +373,7 @@ export default function PrivacyPage() {
         </div>
 
         <div className="mobile-header-actions">
-          <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          <button className="mobile-menu-btn" onClick={() = aria-label="Open menu"> setIsMobileMenuOpen(!isMobileMenuOpen)}>
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
@@ -382,8 +383,8 @@ export default function PrivacyPage() {
         <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}>
           <div className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="mobile-menu-header">
-              <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: "45px", width: "auto" }} />
-              <button className="mobile-menu-close" onClick={() => setIsMobileMenuOpen(false)}>
+              <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={135} height={45} style={{ height: "45px", width: "auto" }} />
+              <button className="mobile-menu-close" onClick={() = aria-label="Close menu"> setIsMobileMenuOpen(false)}>
                 <X size={24} />
               </button>
             </div>

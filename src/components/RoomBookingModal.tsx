@@ -325,7 +325,7 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
         width: 'min(520px, calc(100vw - 24px))',
         maxHeight: '96vh',
         overflowY: 'auto',
-        fontFamily: "'Outfit', sans-serif",
+        fontFamily: "var(--font-outfit), sans-serif",
         animation: 'rbmFade 0.2s ease forwards',
       }}>
         <style>{`

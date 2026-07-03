@@ -5,6 +5,7 @@ import { Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import FloatingWidgets from '@/components/FloatingWidgets';
 import BookNowButton from '@/components/BookNowButton';
 import Link from 'next/link';
+import Image from 'next/image';
 
 /* ─── DATA ─── */
 const packages = [
@@ -24,7 +25,7 @@ const packages = [
     price: "₹14,999", priceLabel: "Starting From", duration: "1 Day / 2 Days",
     ideal: ["Devotees", "Seekers", "Solo Travelers"],
     highlights: ["7 Temple Darshan", "Expert Guide", "Prasad Included", "Flexible Timing"],
-    image: "https://blog.yatradham.org/wp-content/uploads/2025/03/Shri-Radha-Raman-Temple.jpg", badge: "Devotee's Choice", color: "#c87941",
+    image: "https://blog.yatradham.org/wp-content/uploads/2025/03/Shri-Radha-Raman-Temple.webp", badge: "Devotee's Choice", color: "#c87941",
   },
   {
     id: 3, tag: "Exclusive", title: "Customized Yatra",
@@ -336,7 +337,7 @@ export default function BrajYatra() {
 
         /* Big title matching image */
         .y-hero-title {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: clamp(2.8rem, 5.5vw, 5rem) !important;
           font-weight: 400 !important;
           line-height: 1.05 !important;
@@ -356,7 +357,7 @@ export default function BrajYatra() {
 
         /* Descriptive block matching image */
         .y-hero-desc {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           font-size: clamp(0.95rem, 1.15vw, 1.12rem);
           color: #4b5563;
           line-height: 1.8;
@@ -424,7 +425,7 @@ export default function BrajYatra() {
           left: 50%;
           transform: translateX(-50%);
           color: #ffffff;
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: clamp(2rem, 5.5vw, 3.8rem);
           text-align: center;
           z-index: 7;
@@ -626,7 +627,7 @@ export default function BrajYatra() {
           justify-content: center;
         }
         .y-stat-num {
-          font-family: 'Bebas Neue', cursive;
+          font-family: var(--font-bebas-neue), cursive;
           font-size: clamp(2.5rem, 3.8vw, 3.8rem);
           color: #d4af37;
           line-height: 1;
@@ -651,7 +652,7 @@ export default function BrajYatra() {
         .y-intro { padding: 70px 8%; background: #fff; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
         .y-sec-eyebrow { display: inline-flex; align-items: center; gap: 12px; color: var(--gold); font-size: 0.72rem; font-weight: 700; letter-spacing: 3.5px; text-transform: uppercase; margin-bottom: 22px; }
         .y-sec-eyebrow::before { content: ''; width: 32px; height: 2px; background: var(--gold); border-radius: 2px; }
-        .y-sec-title { font-family: 'Bebas Neue', cursive !important; font-size: clamp(2.4rem, 4.5vw, 3.8rem) !important; font-weight: 400 !important; color: var(--dark); line-height: 1 !important; margin-bottom: 28px; letter-spacing: 0.04em; }
+        .y-sec-title { font-family: var(--font-bebas-neue), cursive !important; font-size: clamp(2.4rem, 4.5vw, 3.8rem) !important; font-weight: 400 !important; color: var(--dark); line-height: 1 !important; margin-bottom: 28px; letter-spacing: 0.04em; }
         .y-sec-title .y-accent { color: var(--gold); }
         .y-body { font-size: 1.02rem; line-height: 1.9; color: #666; margin-bottom: 16px; }
 
@@ -664,7 +665,7 @@ export default function BrajYatra() {
         .y-intro-main { position: absolute; right: 0; top: 0; width: 75%; height: 82%; object-fit: cover; border-radius: 28px; box-shadow: 0 30px 70px rgba(0,0,0,0.12); }
         .y-intro-accent { position: absolute; left: 0; bottom: 0; width: 50%; height: 50%; object-fit: cover; border-radius: 24px; border: 10px solid #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.12); z-index: 2; }
         .y-intro-badge { position: absolute; top: 35px; left: 25px; z-index: 3; background: var(--dark); color: #fff; padding: 22px 28px; border-radius: 22px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; }
-        .y-intro-badge strong { display: block; font-family: 'Bebas Neue', cursive; font-size: 2.5rem; color: var(--gold); line-height: 1; }
+        .y-intro-badge strong { display: block; font-family: var(--font-bebas-neue), cursive; font-size: 2.5rem; color: var(--gold); line-height: 1; }
         .y-intro-badge span { font-size: 0.68rem; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 1.5px; }
         /* Decorative ring */
         .y-intro-ring { position: absolute; right: -20px; top: -20px; width: 140px; height: 140px; border: 2px solid rgba(212,175,55,0.15); border-radius: 50%; z-index: 0; }
@@ -690,7 +691,7 @@ export default function BrajYatra() {
           border: 1.5px solid rgba(255, 220, 100, 0.25);
         }
         .y-journey-orb-text {
-          font-family: 'Bebas Neue', cursive;
+          font-family: var(--font-bebas-neue), cursive;
           font-size: 1.15rem;
           color: #fff;
           letter-spacing: 0.06em;
@@ -730,7 +731,7 @@ export default function BrajYatra() {
         .y-vitem-icon.ic-3 { background: #c87941; }
         .y-vitem-icon.ic-4 { background: #2a3a1b; }
         .y-vitem-num {
-          font-family: 'Bebas Neue', cursive;
+          font-family: var(--font-bebas-neue), cursive;
           font-size: 0.72rem;
           color: rgba(0,0,0,0.28);
           letter-spacing: 1px;
@@ -738,7 +739,7 @@ export default function BrajYatra() {
         }
         .y-vitem-body { padding-top: 8px; }
         .y-vitem-title {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: 1.15rem !important;
           font-weight: 400 !important;
           color: #0a0e14;
@@ -831,7 +832,7 @@ export default function BrajYatra() {
         .y-bento-img-arrow.right { right: 24px; }
 
         .y-badge { display: inline-block; background: var(--gold); color: var(--dark); font-size: 0.68rem; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; padding: 6px 16px; border-radius: 50px; margin-bottom: 18px; }
-        .y-pkg-title { font-family: 'Bebas Neue', cursive !important; font-size: 2.4rem !important; font-weight: 400 !important; color: #fff; line-height: 1 !important; margin-bottom: 10px; letter-spacing: 0.05em; }
+        .y-pkg-title { font-family: var(--font-bebas-neue), cursive !important; font-size: 2.4rem !important; font-weight: 400 !important; color: #fff; line-height: 1 !important; margin-bottom: 10px; letter-spacing: 0.05em; }
         .y-pkg-sub { font-size: 0.88rem; color: rgba(255,255,255,0.7); margin-bottom: 24px; }
         .y-duration { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.9); font-size: 0.8rem; padding: 8px 18px; border-radius: 50px; }
 
@@ -841,11 +842,11 @@ export default function BrajYatra() {
         .y-info-card:hover { border-color: rgba(212,175,55,0.3); box-shadow: 0 8px 30px rgba(212,175,55,0.08); }
 
         .y-price-lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 2.5px; color: #94a3b8; margin-bottom: 6px; font-weight: 600; }
-        .y-price { font-family: 'Bebas Neue', cursive; font-size: 3.2rem; color: var(--dark); line-height: 1; letter-spacing: 0.04em; }
+        .y-price { font-family: var(--font-bebas-neue), cursive; font-size: 3.2rem; color: var(--dark); line-height: 1; letter-spacing: 0.04em; }
         .y-price-note { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; margin-bottom: 24px; }
         .y-pkg-desc { font-size: 0.9rem; line-height: 1.8; color: #64748b; margin-bottom: 28px; }
 
-        .y-btn-book { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: var(--dark); color: #fff; padding: 17px 28px; border-radius: 50px; font-family: 'Bebas Neue', cursive; font-size: 1.15rem; letter-spacing: 1.5px; text-decoration: none; transition: all 0.4s cubic-bezier(0.22,1,0.36,1); border: none; cursor: pointer; position: relative; overflow: hidden; }
+        .y-btn-book { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: var(--dark); color: #fff; padding: 17px 28px; border-radius: 50px; font-family: var(--font-bebas-neue), cursive; font-size: 1.15rem; letter-spacing: 1.5px; text-decoration: none; transition: all 0.4s cubic-bezier(0.22,1,0.36,1); border: none; cursor: pointer; position: relative; overflow: hidden; }
         .y-btn-book::before { content:''; position: absolute; top:0; left:-80%; width:60%; height:100%; background: linear-gradient(120deg, transparent, rgba(255,255,255,0.12), transparent); transform: skewX(-20deg); transition: left 0.7s ease; }
         .y-btn-book:hover::before { left: 130%; }
         .y-btn-book:hover { background: var(--gold); color: var(--dark); transform: translateY(-2px); box-shadow: 0 12px 35px rgba(212,175,55,0.35); }
@@ -873,7 +874,7 @@ export default function BrajYatra() {
         .y-dest-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(5,5,10,0.88) 0%, rgba(5,5,10,0.1) 60%); z-index: 1; }
         .y-dest-content { position: absolute; bottom: 0; left: 0; right: 0; z-index: 2; padding: 28px; }
         .y-dest-label { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 2.5px; color: var(--gold); font-weight: 600; margin-bottom: 8px; }
-        .y-dest-name { font-family: 'Bebas Neue', cursive !important; font-size: 1.8rem !important; font-weight: 400 !important; color: #fff; line-height: 1 !important; letter-spacing: 0.04em; }
+        .y-dest-name { font-family: var(--font-bebas-neue), cursive !important; font-size: 1.8rem !important; font-weight: 400 !important; color: #fff; line-height: 1 !important; letter-spacing: 0.04em; }
         .y-dest:nth-child(1) .y-dest-name { font-size: 2.4rem !important; }
         .y-dest-arrow { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; z-index: 2; opacity: 0; transition: all 0.4s ease; transform: translateX(-8px); }
         .y-dest:hover .y-dest-arrow { opacity: 1; transform: translateX(0); }
@@ -899,7 +900,7 @@ export default function BrajYatra() {
           background: #f3f4f6;
           border: 1px solid #e5e7eb;
           color: #374151;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           font-size: 0.72rem;
           font-weight: 700;
           letter-spacing: 2.5px;
@@ -909,7 +910,7 @@ export default function BrajYatra() {
           margin-bottom: 18px;
         }
         .y-why-section-title {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: clamp(2.2rem, 4vw, 3.4rem) !important;
           font-weight: 400 !important;
           line-height: 1.05 !important;
@@ -975,7 +976,7 @@ export default function BrajYatra() {
           box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
         }
         .y-why-lcard-title {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: 1.5rem !important;
           font-weight: 400 !important;
           color: #0f172a;
@@ -984,7 +985,7 @@ export default function BrajYatra() {
           letter-spacing: 0.04em;
         }
         .y-why-lcard-desc {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           font-size: 0.9rem;
           line-height: 1.75;
           color: #64748b;
@@ -1030,7 +1031,7 @@ export default function BrajYatra() {
           background: rgba(255, 255, 255, 0.07);
         }
         .y-why-dcard-title {
-          font-family: 'Bebas Neue', cursive !important;
+          font-family: var(--font-bebas-neue), cursive !important;
           font-size: 1.9rem !important;
           font-weight: 400 !important;
           color: #ffffff;
@@ -1042,7 +1043,7 @@ export default function BrajYatra() {
           flex: 1;
         }
         .y-why-dcard-desc {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-outfit), sans-serif;
           font-size: 0.9rem;
           line-height: 1.78;
           color: rgba(190, 210, 245, 0.75);
@@ -1054,7 +1055,7 @@ export default function BrajYatra() {
           gap: 10px;
           background: #d4af37;
           color: #0f172a;
-          font-family: 'Bebas Neue', cursive;
+          font-family: var(--font-bebas-neue), cursive;
           font-size: 1.1rem;
           font-weight: 400;
           padding: 13px 26px;
@@ -1101,13 +1102,13 @@ export default function BrajYatra() {
         }
         .y-cta-box::before { content: ''; position: absolute; right: -80px; top: -80px; width: 500px; height: 500px; background: radial-gradient(ellipse, rgba(212,175,55,0.1) 0%, transparent 70%); pointer-events: none; }
         .y-cta-box::after { content: ''; position: absolute; left: 50px; bottom: 50px; width: 200px; height: 200px; background: radial-gradient(ellipse, rgba(212,175,55,0.06) 0%, transparent 70%); pointer-events: none; }
-        .y-cta-tag { display: inline-flex; align-items: center; gap: 10px; color: var(--gold); font-size: 0.7rem; letter-spacing: 3.5px; text-transform: uppercase; font-weight: 700; margin-bottom: 22px; font-family: 'Outfit', sans-serif; }
-        .y-cta-title { font-family: 'Bebas Neue', cursive !important; font-size: clamp(2.2rem, 4vw, 3.6rem) !important; font-weight: 400 !important; color: #fff; line-height: 1.05 !important; margin-bottom: 20px; letter-spacing: 0.04em; }
-        .y-cta-desc { font-family: 'Outfit', sans-serif; font-size: 0.98rem; color: rgba(255,255,255,0.5); line-height: 1.75; max-width: 500px; }
+        .y-cta-tag { display: inline-flex; align-items: center; gap: 10px; color: var(--gold); font-size: 0.7rem; letter-spacing: 3.5px; text-transform: uppercase; font-weight: 700; margin-bottom: 22px; font-family: var(--font-outfit), sans-serif; }
+        .y-cta-title { font-family: var(--font-bebas-neue), cursive !important; font-size: clamp(2.2rem, 4vw, 3.6rem) !important; font-weight: 400 !important; color: #fff; line-height: 1.05 !important; margin-bottom: 20px; letter-spacing: 0.04em; }
+        .y-cta-desc { font-family: var(--font-outfit), sans-serif; font-size: 0.98rem; color: rgba(255,255,255,0.5); line-height: 1.75; max-width: 500px; }
         .y-cta-btns { display: flex; flex-direction: column; gap: 14px; min-width: 250px; flex-shrink: 0; }
-        .y-btn-cta { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--gold); color: var(--dark); padding: 18px 36px; border-radius: 50px; font-family: 'Bebas Neue', cursive; font-size: 1.2rem; letter-spacing: 1.5px; text-decoration: none; transition: all 0.4s cubic-bezier(0.22,1,0.36,1); white-space: nowrap; }
+        .y-btn-cta { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--gold); color: var(--dark); padding: 18px 36px; border-radius: 50px; font-family: var(--font-bebas-neue), cursive; font-size: 1.2rem; letter-spacing: 1.5px; text-decoration: none; transition: all 0.4s cubic-bezier(0.22,1,0.36,1); white-space: nowrap; }
         .y-btn-cta:hover { background: #e8c84a; transform: translateY(-3px); box-shadow: 0 12px 40px rgba(212,175,55,0.45); }
-        .y-btn-cta-outline { display: flex; align-items: center; justify-content: center; gap: 10px; background: transparent; color: rgba(255,255,255,0.65); padding: 16px 36px; border-radius: 50px; font-family: 'Bebas Neue', cursive; font-size: 1.1rem; letter-spacing: 1.5px; text-decoration: none; border: 1.5px solid rgba(255,255,255,0.1); transition: all 0.4s ease; white-space: nowrap; }
+        .y-btn-cta-outline { display: flex; align-items: center; justify-content: center; gap: 10px; background: transparent; color: rgba(255,255,255,0.65); padding: 16px 36px; border-radius: 50px; font-family: var(--font-bebas-neue), cursive; font-size: 1.1rem; letter-spacing: 1.5px; text-decoration: none; border: 1.5px solid rgba(255,255,255,0.1); transition: all 0.4s ease; white-space: nowrap; }
         .y-btn-cta-outline:hover { border-color: rgba(255,255,255,0.35); color: #fff; background: rgba(255,255,255,0.05); }
 
         /* ═══ RESPONSIVE ═══ */
@@ -1233,14 +1234,14 @@ export default function BrajYatra() {
       {/* ═══ HEADER ═══ */}
       <header id="main-header" className={scrolled ? "scrolled" : ""}>
         <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img loading="lazy" decoding="async" src="/sp logo.png" alt="Srila Prabhupada" style={{ height: '60px', width: 'auto', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
+            <Image src="/sp logo.webp" alt="Srila Prabhupada" width={100} height={60} style={{ height: '60px', width: 'auto', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: '55px', width: 'auto', display: 'block' }} />
+              <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={165} height={55} style={{ height: '55px', width: 'auto', display: 'block' }} />
             </Link>
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img loading="lazy" decoding="async" src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
+              <Image src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" width={50} height={50} style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
             </Link>
           </div>
         <nav>
@@ -1256,7 +1257,7 @@ export default function BrajYatra() {
           <BookNowButton href="/guesthouse#rooms-suites" />
         </div>
         <div className="mobile-header-actions">
-          <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          <button className="mobile-menu-btn" onClick={() = aria-label="Open menu"> setIsMobileMenuOpen(!isMobileMenuOpen)}>
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
@@ -1268,9 +1269,9 @@ export default function BrajYatra() {
           <div className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="mobile-menu-header">
               <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-                <img loading="lazy" decoding="async" src="/Braj_nidhi_.png" alt="Braj Nidhi Logo" style={{ height: "45px", width: "auto", cursor: "pointer" }} />
+                <img loading="lazy" decoding="async" src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" style={{ height: "45px", width: "auto", cursor: "pointer" }} />
               </Link>
-              <button className="mobile-menu-close" onClick={() => setIsMobileMenuOpen(false)}><X size={24} /></button>
+              <button className="mobile-menu-close" onClick={() = aria-label="Close menu"> setIsMobileMenuOpen(false)}><X size={24} /></button>
             </div>
             <div className="mobile-nav-links">
               <ul>
@@ -1405,8 +1406,8 @@ export default function BrajYatra() {
           <motion.div {...fadeUp} transition={{ duration: 0.9, delay: 0.2, ease: "easeOut" as const }}>
             <div className="y-intro-imgs">
               <div className="y-intro-ring" />
-              <img loading="lazy" decoding="async" src="/%23Vrindavan.jpg" alt="Temple Darshan" className="y-intro-main" />
-              <img loading="lazy" decoding="async" src="/keshi%20ghat.jpg" alt="Braj Heritage" className="y-intro-accent" />
+              <img loading="lazy" decoding="async" src="/radha-raman-temple.webp" alt="Temple Darshan" className="y-intro-main" />
+              <img loading="lazy" decoding="async" src="/keshi%20ghat.webp" alt="Braj Heritage" className="y-intro-accent" />
               <motion.div className="y-intro-badge" initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true } as const} transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" as const }}>
                 <strong>20+</strong><span>Years of<br />Experience</span>
               </motion.div>

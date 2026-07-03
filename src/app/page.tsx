@@ -426,13 +426,32 @@ export default function Home() {
   }, []);
 
   const requestReservation = () => {
+    let roomsText = [];
+    let totalPrice = 0;
+    
+    if (bookingData.roomCounts.deluxe2 > 0) {
+      roomsText.push(`${bookingData.roomCounts.deluxe2}x Deluxe 2`);
+      totalPrice += bookingData.roomCounts.deluxe2 * (roomPrices['Deluxe 2 – Twin Bedded Room'] || 3500);
+    }
+    if (bookingData.roomCounts.deluxe3 > 0) {
+      roomsText.push(`${bookingData.roomCounts.deluxe3}x Deluxe 3`);
+      totalPrice += bookingData.roomCounts.deluxe3 * (roomPrices['Deluxe 3 – 3 Bedded Room'] || 4500);
+    }
+    if (bookingData.roomCounts.deluxe4 > 0) {
+      roomsText.push(`${bookingData.roomCounts.deluxe4}x Deluxe 4`);
+      totalPrice += bookingData.roomCounts.deluxe4 * (roomPrices['Deluxe 4 – 4 Bedded Room'] || 5500);
+    }
+
+    const roomDetails = roomsText.length > 0 ? roomsText.join(', ') : 'None';
+
     alert(`Reservation Requested!
 
-Room: ${bookingData.roomType}
-Price: ₹${roomPrices[bookingData.roomType].toLocaleString()}/night
+Rooms: ${roomDetails}
+Price: ₹${totalPrice.toLocaleString()}/night
 Check-in: ${bookingData.checkIn}
 Check-out: ${bookingData.checkOut}
 Guests: ${bookingData.guests}
+Pets: ${bookingData.pets ? 'Yes' : 'No'}
 Event: ${bookingData.eventType}`);
   };
 

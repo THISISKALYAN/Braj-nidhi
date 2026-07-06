@@ -12,6 +12,7 @@ const SectionLinkButton = dynamic(() => import('@/components/SectionLinkButton')
 const PremiumDoubleCalendar = dynamic(() => import('@/components/PremiumDoubleCalendar'), { ssr: false });
 const RoomBookingModal = dynamic(() => import('@/components/RoomBookingModal'), { ssr: false });
 
+
 // Self-contained Hero Slideshow Component to prevent top-level page re-renders
 const imagePositions: Record<string, string> = {
   "m1.webp": "center 30%",
@@ -598,7 +599,7 @@ Event: ${bookingData.eventType}`);
 
     <main>
         <h1 className="visually-hidden" style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>Braj Nidhi Guesthouse</h1>
-        <section className="hero">
+        <section className="hero" style={{ position: 'relative' }}>
             <div className="hero-slider-container">
                 <HeroSlideshow images={heroImages} mobileImages={mobileHeroImages} />
             </div>

@@ -27,6 +27,9 @@ export async function POST(req: NextRequest) {
       razorpayPaymentId,
       razorpayOrderId,
       erpReservationId,
+      totalAmount,
+      taxableAmount,
+      gstAmount,
     } = body;
 
     // ── Input validation ──────────────────────────────────────────────────────
@@ -90,6 +93,9 @@ export async function POST(req: NextRequest) {
       razorpayPaymentId: typeof razorpayPaymentId === 'string' ? razorpayPaymentId : undefined,
       razorpayOrderId: typeof razorpayOrderId === 'string' ? razorpayOrderId : undefined,
       erpReservationId: typeof erpReservationId === 'string' ? erpReservationId : undefined,
+      totalAmount: typeof totalAmount === 'number' ? totalAmount : undefined,
+      taxableAmount: typeof taxableAmount === 'number' ? taxableAmount : undefined,
+      gstAmount: typeof gstAmount === 'number' ? gstAmount : undefined,
     });
 
     if (!result.success) {

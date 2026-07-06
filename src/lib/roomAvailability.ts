@@ -42,6 +42,9 @@ export interface BookingRecord {
   erpSyncStatus?: 'synced' | 'pending' | 'failed';
   razorpayPaymentId?: string;
   razorpayOrderId?: string;
+  totalAmount?: number;
+  taxableAmount?: number;
+  gstAmount?: number;
 }
 
 // ─── Storage Abstraction ──────────────────────────────────────────────────────
@@ -476,6 +479,14 @@ export async function syncToERP(booking: BookingRecord): Promise<{
         check_out_date: booking.checkOut,
         booking_type: ERP_BOOKING_TYPE,
         hold_type: ERP_HOLD_TYPE,
+        ...(booking.totalAmount !== undefined && {
+          amount: booking.totalAmount,
+          total_amount: booking.totalAmount,
+          taxable_amount: booking.taxableAmount,
+          gst_amount: booking.gstAmount,
+          gst_rate: 5,
+          tax_rate: 5,
+        }),
         guest: {
           name: booking.guestName || 'Guest',
           email: booking.guestEmail || '',
@@ -487,6 +498,14 @@ export async function syncToERP(booking: BookingRecord): Promise<{
             qty: booking.rooms,
             adults: booking.adults,
             children: booking.children,
+            ...(booking.totalAmount !== undefined && {
+              rate: Math.round(booking.totalAmount / (booking.rooms || 1)),
+              amount: booking.totalAmount,
+              taxable_amount: booking.taxableAmount,
+              gst_amount: booking.gstAmount,
+              gst_rate: 5,
+              tax_rate: 5,
+            }),
           },
         ],
         ...(booking.razorpayPaymentId && { gateway_payment_id: booking.razorpayPaymentId }),
@@ -530,6 +549,9 @@ export async function createBooking(params: {
   razorpayPaymentId?: string;
   razorpayOrderId?: string;
   erpReservationId?: string;
+  totalAmount?: number;
+  taxableAmount?: number;
+  gstAmount?: number;
 }): Promise<{ success: boolean; booking?: BookingRecord; error?: string; erpError?: string }> {
   // Check availability
   const avail = await getAvailabilityForRange(params.roomType, params.checkIn, params.checkOut);
@@ -564,6 +586,9 @@ export async function createBooking(params: {
     erpSyncStatus: alreadySynced ? 'synced' : 'pending',
     razorpayPaymentId: params.razorpayPaymentId,
     razorpayOrderId: params.razorpayOrderId,
+    totalAmount: params.totalAmount,
+    taxableAmount: params.taxableAmount,
+    gstAmount: params.gstAmount,
   };
 
   bookings.push(booking);

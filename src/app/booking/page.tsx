@@ -142,6 +142,7 @@ export default function BookingPage() {
   const [bookingRef, setBookingRef] = useState<string>('');
   const [razorpayPaymentId, setRazorpayPaymentId] = useState<string>('');
   const [razorpayOrderId, setRazorpayOrderId] = useState<string>('');
+  const [reservationError, setReservationError] = useState<{ paymentId: string; message: string } | null>(null);
 
   // ERP Live API Connection States
   const [reservationId, setReservationId] = useState<string>('');
@@ -575,9 +576,12 @@ export default function BookingPage() {
 
     setPaymentLoading(true);
     setPaymentStepText('Securing your room...');
+    setReservationError(null);
+    setCurrentStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    let resId = 'MOCK-RES-' + Math.floor(100000 + Math.random() * 900000);
+    // Use a temporary order reference before payment completes — never generate fake reservation IDs
+    const tempOrderRef = 'PAY-REQ-' + Math.floor(100000 + Math.random() * 900000);
     const amount = payableTotal;
 
     // Always use the canonical ERP room type IDs — override with live ERP value if available
@@ -592,8 +596,6 @@ export default function BookingPage() {
       if (found?.roomTypeId) targetRoomType = found.roomTypeId;
     }
 
-    setReservationId(resId);
-
     // Load Razorpay and open checkout
     try {
       setPaymentStepText('Opening payment gateway...');
@@ -604,7 +606,7 @@ export default function BookingPage() {
       const orderRes = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, currency: 'INR', reservation_id: resId }),
+        body: JSON.stringify({ amount, currency: 'INR', reservation_id: tempOrderRef }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || 'Failed to create payment order');
@@ -616,46 +618,30 @@ export default function BookingPage() {
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'Braj Nidhi Guesthouse',
-        description: `Booking ${resId}`,
+        description: `Stay Booking - ${getRoomTitle(roomType)}`,
         image: '/logo.png',
         order_id: orderData.order_id,
         handler: async (response: any) => {
-          setPaymentLoading(true);
-          setPaymentStepText('Verifying payment...');
-
-          const verifyRes = await fetch('/api/payment/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              // Pass booking details for notifications
-              bookingDetails: {
-                guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
-                guestEmail: guestDetails.email,
-                guestPhone: guestDetails.phone,
-                roomType,
-                roomName: getRoomTitle(roomType),
-                checkIn,
-                checkOut,
-                nights,
-                rooms,
-                adults,
-                children,
-                total: payableTotal,
-                bookingRef: resId,
-                paymentId: response.razorpay_payment_id,
-              },
-            }),
-          });
-          const verifyData = await verifyRes.json();
-          if (!verifyRes.ok) throw new Error(verifyData.error || 'Payment verification failed');
-
-          // Create ERP reservation only after payment is verified
-          let erpReservationCreated = false;
-          let erpAmountConfirmed = amount;
           try {
+            setPaymentLoading(true);
+            setPaymentStepText('Verifying payment signature...');
+
+            // 1. Verify Razorpay signature WITHOUT passing bookingDetails so confirmation notifications are NOT sent prematurely
+            const verifyRes = await fetch('/api/payment/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok || !verifyData.verified) {
+              throw new Error(verifyData.error || 'Payment cryptographic verification failed.');
+            }
+
+            // 2. Create reservation in ERP — fail hard if ERP returns an error or dummy ID
             setPaymentStepText('Creating reservation in ERP...');
             const guestName = `${guestDetails.firstName} ${guestDetails.lastName}`.trim();
             const additionalGuestsPayload = savedGuests.map(g => ({
@@ -672,43 +658,67 @@ export default function BookingPage() {
                 check_out_date: checkOut,
                 booking_type: "Walk-In",
                 hold_type: "BN-BN-VCM Web Site-0001-0001",
+                amount: payableTotal,
+                total_amount: payableTotal,
+                taxable_amount: taxableAmount,
+                gst_amount: gstAmount,
+                gst_rate: 5,
+                tax_rate: 5,
                 guest: {
                   name: guestName,
                   email: guestDetails.email,
                   phone: guestDetails.phone,
                 },
-                rooms: Object.entries(roomSelections).filter(([_, qty]) => qty > 0).map(([rt, qty]) => ({
-                  room_type: erpRoomTypeMap[rt] || 'BN-DELUXE-2',
-                  qty,
-                  adults: Math.max(1, Math.floor(adults / rooms)),
-                  children: Math.floor(children / rooms)
-                })),
+                rooms: Object.entries(roomSelections).filter(([_, qty]) => qty > 0).map(([rt, qty]) => {
+                  const roomPrice = livePrices[rt] || getRoomPrice(rt);
+                  const roomTotal = roomPrice * nights * qty;
+                  const roomTaxable = Math.round(roomTotal / (1 + gstRate));
+                  const roomGst = roomTotal - roomTaxable;
+                  return {
+                    room_type: erpRoomTypeMap[rt] || 'BN-DELUXE-2',
+                    qty,
+                    rate: roomPrice,
+                    amount: roomTotal,
+                    taxable_amount: roomTaxable,
+                    gst_amount: roomGst,
+                    gst_rate: 5,
+                    tax_rate: 5,
+                    adults: Math.max(1, Math.floor(adults / rooms)),
+                    children: Math.floor(children / rooms)
+                  };
+                }),
                 additional_guests: additionalGuestsPayload,
                 gateway_payment_id: response.razorpay_payment_id,
                 gateway_order_id: response.razorpay_order_id,
               })
             });
             const erpResult = await erpRes.json();
-            if (erpRes.ok) {
-              resId = erpResult.reservationId || erpResult.reservation_id || erpResult.name || resId;
-              if (erpResult.amount) erpAmountConfirmed = erpResult.amount;
-              erpReservationCreated = true;
-            } else {
-              console.error('ERP create_reservation failed:', erpResult);
+            if (!erpRes.ok || erpResult.error || erpResult.exception) {
+              const errDetail = erpResult.error || erpResult.exception || erpResult.message || 'Hotel server rejected reservation request';
+              throw new Error(typeof errDetail === 'string' ? errDetail : JSON.stringify(errDetail));
             }
-          } catch (err: any) {
-            console.error('ERP reservation error:', err);
-          }
 
-          if (erpReservationCreated) {
+            const confirmedResId = erpResult.reservationId || erpResult.reservation_id || erpResult.name;
+            if (!confirmedResId || typeof confirmedResId !== 'string' || confirmedResId.startsWith('MOCK-') || confirmedResId.trim() === '') {
+              throw new Error('Hotel ERP server did not return a valid confirmed Reservation ID.');
+            }
+
+            let erpAmountConfirmed = erpResult.amount || amount;
+
+            // 3. Confirm payment with ERP
             setPaymentStepText('Sending payment details to ERP...');
             try {
               const confirmRes = await fetch('/api/booking/confirm_payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  reservation_id: resId,
+                  reservation_id: confirmedResId,
                   amount: erpAmountConfirmed,
+                  total_amount: erpAmountConfirmed,
+                  taxable_amount: taxableAmount,
+                  gst_amount: gstAmount,
+                  gst_rate: 5,
+                  tax_rate: 5,
                   mode_of_payment: 'Bank Transfer',
                   gateway_payment_id: response.razorpay_payment_id,
                   gateway_order_id: response.razorpay_order_id,
@@ -718,48 +728,86 @@ export default function BookingPage() {
               });
               const confirmData = await confirmRes.json();
               if (!confirmRes.ok) console.error('ERP confirm_payment failed:', confirmData);
-              const ref = confirmData.bookingReference || confirmData.bookingRef || confirmData.reservationId || confirmData.name || resId;
+              const ref = confirmData.bookingReference || confirmData.bookingRef || confirmData.reservationId || confirmData.name || confirmedResId;
               setBookingRef(ref);
             } catch (err: any) {
               console.error('ERP confirm_payment error:', err);
-              setBookingRef(resId);
+              setBookingRef(confirmedResId);
             }
-          } else {
-            setBookingRef(resId);
-          }
 
-          setRazorpayPaymentId(response.razorpay_payment_id);
-          setRazorpayOrderId(response.razorpay_order_id);
-          setReservationId(resId);
+            setRazorpayPaymentId(response.razorpay_payment_id);
+            setRazorpayOrderId(response.razorpay_order_id);
+            setReservationId(confirmedResId);
 
-          // Save local booking record to decrement website availability
-          try {
-            setPaymentStepText('Updating availability...');
-            await fetch('/api/availability/book', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                roomType,
-                checkIn,
-                checkOut,
-                rooms,
-                adults,
-                children,
-                guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
-                guestEmail: guestDetails.email,
-                guestPhone: guestDetails.phone,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpayOrderId: response.razorpay_order_id,
-                erpReservationId: erpReservationCreated ? resId : undefined,
-              }),
-            });
+            // 4. Save local booking record to update website availability
+            try {
+              setPaymentStepText('Updating availability...');
+              await fetch('/api/availability/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  roomType,
+                  checkIn,
+                  checkOut,
+                  rooms,
+                  adults,
+                  children,
+                  guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
+                  guestEmail: guestDetails.email,
+                  guestPhone: guestDetails.phone,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpayOrderId: response.razorpay_order_id,
+                  erpReservationId: confirmedResId,
+                }),
+              });
+            } catch (err: any) {
+              console.error('Local booking save error:', err);
+            }
+
+            // 5. Now that reservation is confirmed in ERP, trigger confirmation email & WhatsApp notifications
+            setPaymentStepText('Sending booking confirmations...');
+            try {
+              await fetch('/api/payment/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  bookingDetails: {
+                    guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
+                    guestEmail: guestDetails.email,
+                    guestPhone: guestDetails.phone,
+                    roomType,
+                    roomName: getRoomTitle(roomType),
+                    checkIn,
+                    checkOut,
+                    nights,
+                    rooms,
+                    adults,
+                    children,
+                    total: payableTotal,
+                    bookingRef: confirmedResId,
+                    paymentId: response.razorpay_payment_id,
+                  },
+                }),
+              });
+            } catch (err: any) {
+              console.error('Notification send error:', err);
+            }
+
+            setPaymentLoading(false);
+            setCurrentStep(3);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           } catch (err: any) {
-            console.error('Local booking save error:', err);
+            console.error('Reservation processing failure after payment:', err);
+            setPaymentLoading(false);
+            setPaymentStepText('');
+            setReservationError({
+              paymentId: response?.razorpay_payment_id || 'Unknown',
+              message: err.message || 'Failed to create reservation in hotel database',
+            });
           }
-
-          setPaymentLoading(false);
-          setCurrentStep(3);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         },
         prefill: {
           name: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
@@ -771,6 +819,7 @@ export default function BookingPage() {
           ondismiss: () => {
             setPaymentLoading(false);
             setPaymentStepText('');
+            setCurrentStep(1);
           },
         },
       };
@@ -778,6 +827,7 @@ export default function BookingPage() {
       const rzp = new (window as any).Razorpay(options);
       rzp.on('payment.failed', (response: any) => {
         setPaymentLoading(false);
+        setCurrentStep(1);
         alert(`Payment failed: ${response.error.description}`);
       });
       rzp.open();
@@ -785,6 +835,7 @@ export default function BookingPage() {
     } catch (error: any) {
       console.error('Payment error:', error);
       setPaymentLoading(false);
+      setCurrentStep(1);
       alert(`Payment Error: ${error.message}`);
     }
   };
@@ -3185,12 +3236,74 @@ export default function BookingPage() {
           </>
         )}
 
-        {/* Step 2 — loading overlay while creating ERP reservation */}
-        {currentStep === 2 && paymentLoading && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', gap: '20px' }}>
-            <div className="spinner-payment" style={{ width: '48px', height: '48px', borderWidth: '4px' }}></div>
-            <p style={{ fontSize: '16px', fontWeight: '700', color: '#000', textAlign: 'center' }}>{paymentStepText}</p>
-            <p style={{ fontSize: '13px', color: 'rgba(44,37,32,0.6)', textAlign: 'center' }}>Please do not close or refresh this page.</p>
+        {/* Step 2 — loading overlay or reservation error after payment */}
+        {currentStep === 2 && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', padding: '30px 20px' }}>
+            {paymentLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', maxWidth: '400px', textAlign: 'center' }}>
+                <div className="spinner-payment" style={{ width: '56px', height: '56px', borderWidth: '4px' }}></div>
+                <p style={{ fontSize: '18px', fontWeight: '800', color: '#111', fontFamily: 'Outfit, sans-serif' }}>{paymentStepText}</p>
+                <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.5' }}>Please do not close or refresh this page while we secure your booking with our hotel servers.</p>
+              </div>
+            ) : reservationError ? (
+              <div style={{ background: '#fff', border: '1px solid #fee2e2', borderRadius: '16px', padding: '32px', maxWidth: '520px', width: '100%', boxShadow: '0 20px 25px -5px rgba(239, 68, 68, 0.1), 0 10px 10px -5px rgba(239, 68, 68, 0.04)', textAlign: 'center' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#ef4444', fontSize: '32px' }}>
+                  ⚠️
+                </div>
+                <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#991b1b', marginBottom: '12px', fontFamily: 'Outfit, sans-serif' }}>
+                  Reservation Sync Issue
+                </h3>
+                <p style={{ fontSize: '14px', color: '#4b5563', lineHeight: '1.6', marginBottom: '24px' }}>
+                  Your payment was successfully received by our payment gateway, but our hotel database encountered a temporary issue while generating your room reservation.
+                </p>
+                
+                <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', padding: '16px', marginBottom: '24px', textAlign: 'left' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                    Payment Reference ID
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px' }}>
+                    <code style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a', fontFamily: 'monospace' }}>
+                      {reservationError.paymentId}
+                    </code>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(reservationError.paymentId);
+                        alert('Payment ID copied to clipboard!');
+                      }}
+                      style={{ fontSize: '12px', fontWeight: '700', color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}
+                    >
+                      Copy ID
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#ef4444', marginTop: '10px', fontWeight: '500' }}>
+                    Error Detail: {reservationError.message}
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '13px', color: '#334155', background: '#f1f5f9', padding: '12px 16px', borderRadius: '10px', marginBottom: '24px', lineHeight: '1.5', textAlign: 'left' }}>
+                  <strong>What happens next?</strong><br />
+                  Please contact our front desk with your Payment Reference ID. Our team will manually confirm your room reservation or issue a full refund within 24 hours.
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                  <button
+                    onClick={() => {
+                      setReservationError(null);
+                      setCurrentStep(1);
+                    }}
+                    style={{ padding: '12px 24px', borderRadius: '10px', border: '1px solid #d1d5db', background: '#fff', color: '#374151', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
+                  >
+                    Return to Selection
+                  </button>
+                  <a
+                    href="tel:+919876543210"
+                    style={{ padding: '12px 24px', borderRadius: '10px', background: '#ef4444', color: '#fff', fontSize: '14px', fontWeight: '700', textDecoration: 'none', display: 'inline-block' }}
+                  >
+                    Contact Front Desk
+                  </a>
+                </div>
+              </div>
+            ) : null}
           </div>
         )}
 

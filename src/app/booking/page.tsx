@@ -703,7 +703,7 @@ export default function BookingPage() {
               throw new Error('Hotel ERP server did not return a valid confirmed Reservation ID.');
             }
 
-            let erpAmountConfirmed = erpResult.amount || amount;
+            let erpAmountConfirmed = amount; // Use exact amount paid on Razorpay (inclusive of GST)
 
             // 3. Confirm payment with ERP
             setPaymentStepText('Sending payment details to ERP...');

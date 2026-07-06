@@ -136,6 +136,42 @@
       "bookedAt": "2026-07-02T08:55:05.486Z",
       "status": "confirmed",
       "erpSyncStatus": "failed"
+    },
+    {
+      "id": "BK1783336536260-WCZK",
+      "roomType": "deluxe2",
+      "checkIn": "2026-07-06",
+      "checkOut": "2026-07-07",
+      "rooms": 1,
+      "adults": 2,
+      "children": 0,
+      "guestName": "kalyan  test",
+      "guestEmail": "test@gmail.com",
+      "guestPhone": "9123456780",
+      "bookedAt": "2026-07-06T11:15:36.260Z",
+      "status": "confirmed",
+      "erpReservationId": "BN-2607-00016",
+      "erpSyncStatus": "synced",
+      "razorpayPaymentId": "pay_TACGhgjcrEVkyl",
+      "razorpayOrderId": "order_TACGbyCkMFb612"
+    },
+    {
+      "id": "BK1783336923031-PTRY",
+      "roomType": "deluxe2",
+      "checkIn": "2026-07-06",
+      "checkOut": "2026-07-07",
+      "rooms": 1,
+      "adults": 2,
+      "children": 0,
+      "guestName": "test  test",
+      "guestEmail": "test@gmail.com",
+      "guestPhone": "9123456780",
+      "bookedAt": "2026-07-06T11:22:03.031Z",
+      "status": "confirmed",
+      "erpReservationId": "BN-2607-00017",
+      "erpSyncStatus": "synced",
+      "razorpayPaymentId": "pay_TACNWHIyyvLi4i",
+      "razorpayOrderId": "order_TACNRJFpwFSqQ8"
     }
   ]
 }

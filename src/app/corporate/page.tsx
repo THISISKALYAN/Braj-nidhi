@@ -9,7 +9,7 @@ import Image from 'next/image';
 
 export default function Corporate() {
   const [heroImgIndex, setHeroImgIndex] = useState(0);
-  const heroImages = ["/DSC09652.webp", "/DSC09672.webp"];
+  const heroImages = ["/DSC09672.webp"];
 
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -830,9 +830,9 @@ export default function Corporate() {
               <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={165} height={55} style={{ height: '55px', width: 'auto', display: 'block' }} />
             </Link>
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
-            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
               <Image src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" width={50} height={50} style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
-            </Link>
+            </a>
           </div>
         <nav>
             <ul>
@@ -1349,7 +1349,9 @@ export default function Corporate() {
                 <a href="/braj-yatra#packages">Chaurasi Kos Yatra</a>
                 <a href="/braj-yatra">Govardhan Parikrama</a>
                 <a href="/braj-yatra">Barsana & Nandgaon</a>
-            </div>
+                            <a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer">Chandrodaya Mandir</a>
+                <a href="https://www.vhtofficial.com/" target="_blank" rel="noopener noreferrer">Heritage Tower</a>
+</div>
             <div className="footer-col">
                 <h3>Stay & Book</h3>
                 <a href="/#contact">Book Your Stay</a>

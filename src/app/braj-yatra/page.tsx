@@ -1240,9 +1240,9 @@ export default function BrajYatra() {
               <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={165} height={55} style={{ height: '55px', width: 'auto', display: 'block' }} />
             </Link>
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
-            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
               <Image src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" width={50} height={50} style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
-            </Link>
+            </a>
           </div>
         <nav>
           <ul>
@@ -1703,7 +1703,7 @@ export default function BrajYatra() {
       <footer className="site-footer">
         <div className="footer-top-links">
           <div className="footer-col"><h3>Our Services</h3><a href="/guesthouse">Guesthouse</a><a href="/weddings">Weddings</a><a href="/corporate">Corporate</a><a href="/braj-yatra">Braj Yatra</a></div>
-          <div className="footer-col"><h3>Explore Vrindavan</h3><a href="/braj-yatra#packages">Sapt Devalaya Yatra</a><a href="/braj-yatra#packages">Chaurasi Kos Yatra</a><a href="/braj-yatra">Govardhan Parikrama</a><a href="/braj-yatra">Barsana & Nandgaon</a></div>
+          <div className="footer-col"><h3>Explore Vrindavan</h3><a href="/braj-yatra#packages">Sapt Devalaya Yatra</a><a href="/braj-yatra#packages">Chaurasi Kos Yatra</a><a href="/braj-yatra">Govardhan Parikrama</a><a href="/braj-yatra">Barsana & Nandgaon</a><a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer">Chandrodaya Mandir</a><a href="https://www.vhtofficial.com/" target="_blank" rel="noopener noreferrer">Heritage Tower</a></div>
           <div className="footer-col"><h3>Stay & Book</h3><a href="/booking">Book Your Stay</a><a href="/weddings">Wedding Packages</a><a href="/corporate">Corporate Stays</a><a href="#">Refund Policy</a></div>
           <div className="footer-col"><h3>Help & Support</h3><a href="#">FAQ</a><a href="/contact">Contact Us</a><a href="#">Direction Map</a><a href="#">Group Inquiries</a></div>
           <div className="footer-col"><h3>Information</h3><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link><Link href="/guest-policy">Guest Policy</Link><Link href="/cancellation-policy">Cancellation Policy</Link></div>

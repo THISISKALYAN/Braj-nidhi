@@ -50,7 +50,7 @@ export default function RootLayout({
         />
       </head>
       <body className="index-page antialiased">
-        <Script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js" strategy="lazyOnload" />
+        <Script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js" strategy="afterInteractive" />
         <MusicProvider>
           <LoadingTransition />
           {children}

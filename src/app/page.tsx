@@ -177,14 +177,16 @@ export default function Home() {
     "m2.webp",
     "m3.webp",
     "h11.webp",
-    "DSC09652.webp",
     "DSC09672.webp",
     "DSC02591.webp",
     "DSC06003-HDR.webp",
     "DSC05818-HDR.webp",
-    "DSC05963-HDR.webp"
+    "DSC05963-HDR.webp",
+    "weekend.webp",
+    "m11.webp",
+    "m12.webp"
   ];
-  const mobileHeroImages = ["m1.webp", "m2.webp", "m3.webp"];
+  const mobileHeroImages = ["m1.webp", "m2.webp", "m3.webp", "m11.webp", "m12.webp"];
 
   // Removed aggressive preloading to fix enormous network payloads and LCP issue.
   // Next.js <Image> with priority={true} on the first slide handles LCP optimally.
@@ -536,9 +538,9 @@ Event: ${bookingData.eventType}`);
               <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={165} height={55} style={{ height: '55px', width: 'auto', display: 'block' }} />
             </Link>
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
-            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
               <Image src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" width={50} height={50} style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
-            </Link>
+            </a>
           </div>
         
         <nav>
@@ -997,7 +999,7 @@ Event: ${bookingData.eventType}`);
             </div>
             <div className="offers-grid">
                 <div className="offer-card immersive">
-                    <img loading="lazy" decoding="async" src="royal.webp" alt="Spiritual Retreat" className="offer-bg-img" />
+                    <Image src="/royal.webp" alt="Spiritual Retreat" fill style={{ objectFit: 'cover' }} className="offer-bg-img" />
                     <div className="offer-gradient-blur"></div>
                     
                     <div className="offer-content">
@@ -1033,7 +1035,7 @@ Event: ${bookingData.eventType}`);
 
                 {/*  Offer Card 3  */}
                 <div className="offer-card immersive">
-                    <Image src="/guestroom-1.webp" alt="Weekend Serenity" fill style={{ objectFit: 'cover' }} className="offer-bg-img" />
+                    <Image src="/weekend.webp" alt="Weekend Serenity" fill style={{ objectFit: 'cover' }} className="offer-bg-img" />
                     <div className="offer-gradient-blur"></div>
                     
                     <div className="offer-content">
@@ -1101,40 +1103,40 @@ Event: ${bookingData.eventType}`);
             </div>
             <div className="gallery-slider swiper">
                 <div className="swiper-wrapper">
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/m1.webp" alt="Vrindavan Chandrodaya Mandir" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/m2.webp" alt="Gallery View M2" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/m3.webp" alt="Gallery View M3" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/hero.webp" alt="Braj Nidhi Hero View" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/DSC09672.webp" alt="Gallery View 1" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/DSC09652.webp" alt="Gallery View 2" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/DSC02591.webp" alt="Gallery View 3" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/DSC06003-HDR.webp" alt="Gallery View 4" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/DSC05963-HDR.webp" alt="Gallery View 5" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/d3.webp" alt="Gallery View 6" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/351.webp" alt="Gallery View 7" fill style={{ objectFit: 'cover' }} />
                     </div>
-                    <div className="swiper-slide" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div className="swiper-slide">
                         <Image src="/352.webp" alt="Gallery View 8" fill style={{ objectFit: 'cover' }} />
                     </div>
                 </div>
@@ -1366,7 +1368,7 @@ Event: ${bookingData.eventType}`);
                         <div className="flip-card-front">
                             <img loading="lazy" decoding="async" src="/Radha Vallabh Dwar.webp" alt="Radha Vallabh Temple" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
-                            <div className="distance-pill">3.69 km</div>
+                            <div className="distance-pill">2.5 km</div>
                             <div className="attraction-content">
                                 <div className="title-row">
                                     <h3>Radha Vallabh Temple</h3>
@@ -1394,7 +1396,7 @@ Event: ${bookingData.eventType}`);
                         <div className="flip-card-front">
                             <img loading="lazy" decoding="async" src="/Prem Mandir.webp" alt="Prem Mandir" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
-                            <div className="distance-pill">0.69 km</div>
+                            <div className="distance-pill">0.5 km</div>
                             <div className="attraction-content">
                                 <div className="title-row">
                                     <h3>Prem Mandir</h3>
@@ -1422,7 +1424,7 @@ Event: ${bookingData.eventType}`);
                         <div className="flip-card-front">
                             <img loading="lazy" decoding="async" src="/keshi ghat.webp" alt="Keshi Ghat" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
-                            <div className="distance-pill">1.20 km</div>
+                            <div className="distance-pill">3.5 km</div>
                             <div className="attraction-content">
                                 <div className="title-row">
                                     <h3>Keshi Ghat</h3>
@@ -1450,7 +1452,7 @@ Event: ${bookingData.eventType}`);
                         <div className="flip-card-front">
                             <img loading="lazy" decoding="async" src="/nidhivan.webp" alt="Nidhivan" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
-                            <div className="distance-pill">3.55 km</div>
+                            <div className="distance-pill">3.5 km</div>
                             <div className="attraction-content">
                                 <div className="title-row">
                                     <h3>Nidhivan</h3>
@@ -1478,7 +1480,7 @@ Event: ${bookingData.eventType}`);
                         <div className="flip-card-front">
                             <img loading="lazy" decoding="async" src="/radha-raman-temple.webp" alt="Radha Raman Temple" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
-                            <div className="distance-pill">3.45 km</div>
+                            <div className="distance-pill">3.5 km</div>
                             <div className="attraction-content">
                                 <div className="title-row">
                                     <h3>Radha Raman Temple</h3>
@@ -1506,7 +1508,7 @@ Event: ${bookingData.eventType}`);
                         <div className="flip-card-front">
                             <img loading="lazy" decoding="async" src="/neem-karoli-baba.webp" alt="Neem Karoli Ashram" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
-                            <div className="distance-pill">2.72 km</div>
+                            <div className="distance-pill">1.5 km</div>
                             <div className="attraction-content">
                                 <div className="title-row">
                                     <h3>Neem Karoli Ashram</h3>
@@ -1534,7 +1536,7 @@ Event: ${bookingData.eventType}`);
                         <div className="flip-card-front">
                             <img loading="lazy" decoding="async" src="/raman-reti.webp" alt="Raman Reti" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
-                            <div className="distance-pill">15.39 km</div>
+                            <div className="distance-pill">15.5 km</div>
                             <div className="attraction-content">
                                 <div className="title-row">
                                     <h3>Raman Reti</h3>
@@ -1562,7 +1564,7 @@ Event: ${bookingData.eventType}`);
                         <div className="flip-card-front">
                             <img loading="lazy" decoding="async" src="/nandgaon-holi.webp" alt="Shri Nand Baba Temple" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
-                            <div className="distance-pill">31.64 km</div>
+                            <div className="distance-pill">32.0 km</div>
                             <div className="attraction-content">
                                 <div className="title-row">
                                     <h3>Shri Nand Baba Temple</h3>
@@ -1612,7 +1614,7 @@ Event: ${bookingData.eventType}`);
                         <div className="flip-card-front">
                             <img loading="lazy" decoding="async" src="/banke-bihari-mandir.webp" alt="Shri Banke Bihari Mandir" className="attraction-bg" />
                             <div className="card-overlay-gradient"></div>
-                            <div className="distance-pill">3.69 km</div>
+                            <div className="distance-pill">2.5 km (10 min ride)</div>
                             <div className="attraction-content">
                                 <div className="title-row">
                                     <h3>Shri Banke Bihari Mandir</h3>
@@ -1663,7 +1665,9 @@ Event: ${bookingData.eventType}`);
                 <a href="/braj-yatra#packages">Chaurasi Kos Yatra</a>
                 <a href="/braj-yatra">Govardhan Parikrama</a>
                 <a href="/braj-yatra">Barsana & Nandgaon</a>
-            </div>
+                            <a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer">Chandrodaya Mandir</a>
+                <a href="https://www.vhtofficial.com/" target="_blank" rel="noopener noreferrer">Heritage Tower</a>
+</div>
             <div className="footer-col">
                 <h3>Stay & Book</h3>
                 <a href="/booking">Book Your Stay</a>

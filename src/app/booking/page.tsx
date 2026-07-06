@@ -2380,9 +2380,9 @@ export default function BookingPage() {
               <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={165} height={55} style={{ height: '55px', width: 'auto', display: 'block' }} />
             </Link>
             <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)' }} />
-            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
               <Image src="/LOGO1.webp" alt="Vrindavan Chandrodaya Mandir" width={50} height={50} style={{ height: '50px', width: 'auto', display: 'block', borderRadius: '6px' }} />
-            </Link>
+            </a>
           </div>
         
         <nav>
@@ -3543,7 +3543,7 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
       <footer className="site-footer">
         <div className="footer-top-links">
           <div className="footer-col"><h3>Our Services</h3><Link href="/guesthouse">Guesthouse</Link><Link href="/weddings">Weddings</Link><Link href="/corporate">Corporate</Link><Link href="/braj-yatra">Braj Yatra</Link></div>
-          <div className="footer-col"><h3>Explore Vrindavan</h3><Link href="/braj-yatra#packages">Sapt Devalaya Yatra</Link><Link href="/braj-yatra#packages">Chaurasi Kos Yatra</Link><Link href="/braj-yatra">Govardhan Parikrama</Link><Link href="/braj-yatra">Barsana & Nandgaon</Link></div>
+          <div className="footer-col"><h3>Explore Vrindavan</h3><Link href="/braj-yatra#packages">Sapt Devalaya Yatra</Link><Link href="/braj-yatra#packages">Chaurasi Kos Yatra</Link><Link href="/braj-yatra">Govardhan Parikrama</Link><Link href="/braj-yatra">Barsana & Nandgaon</Link><a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer">Chandrodaya Mandir</a><a href="https://www.vhtofficial.com/" target="_blank" rel="noopener noreferrer">Heritage Tower</a></div>
           <div className="footer-col"><h3>Stay & Book</h3><Link href="/booking">Book Your Stay</Link><Link href="/weddings">Wedding Packages</Link><Link href="/corporate">Corporate Stays</Link><a href="#">Refund Policy</a></div>
           <div className="footer-col"><h3>Help & Support</h3><a href="#">FAQ</a><Link href="/contact">Contact Us</Link><a href="#">Direction Map</a><a href="#">Group Inquiries</a></div>
           <div className="footer-col"><h3>Information</h3><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link><Link href="/guest-policy">Guest Policy</Link><Link href="/cancellation-policy">Cancellation Policy</Link></div>

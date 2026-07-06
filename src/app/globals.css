@@ -2100,7 +2100,7 @@ header.scrolled nav ul li a:hover {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 30px;
-    margin: 0 auto 80px auto;
+    margin: 0 auto 30px auto;
     max-width: 1400px;
     width: 100%;
 }

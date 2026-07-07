@@ -284,8 +284,6 @@ export default function BrajYatra() {
            BRAJ YATRA — WORLD-CLASS EDITION
            ═══════════════════════════════════════════ */
 
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Bebas+Neue&display=swap');
-
         .braj-yatra-page { --gold: #d4af37; --gold-light: #f0d060; --dark: #0a0e14; --dark-soft: #111820; }
 
         /* ── Header overrides ── */

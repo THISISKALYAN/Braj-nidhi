@@ -13,12 +13,17 @@ import RoomBookingModal from '@/components/RoomBookingModal';
 // Self-contained Room Card Slideshow to isolate slide re-renders
 const RoomCardSlideshow = ({ images, alt, interval = 4000 }: { images: string[]; alt: string; interval?: number }) => {
   const [imgIndex, setImgIndex] = useState(0);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
+    const initTimer = setTimeout(() => setHasLoaded(true), 3500);
     const timer = setInterval(() => {
       setImgIndex((prev) => (prev + 1) % images.length);
     }, interval);
-    return () => clearInterval(timer);
+    return () => {
+      clearTimeout(initTimer);
+      clearInterval(timer);
+    };
   }, [images.length, interval]);
 
   return (
@@ -26,11 +31,16 @@ const RoomCardSlideshow = ({ images, alt, interval = 4000 }: { images: string[];
       {images.map((img, i) => {
         const isActive = imgIndex === i;
         const isPrev = (imgIndex - 1 + images.length) % images.length === i;
+        if (i !== 0 && !hasLoaded && !isActive && !isPrev) return null;
+        if (i !== 0 && !isActive && !isPrev && i !== (imgIndex + 1) % images.length) return null;
+
         return (
           <motion.img
             key={img}
             src={img}
             alt={alt}
+            loading="lazy"
+            decoding="async"
             className="room-bg-img"
             initial={false}
             animate={{ 
@@ -208,7 +218,8 @@ export default function Guesthouse() {
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cause:wght@100..900&display=swap" rel="stylesheet" />
+        <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cause:wght@100..900&display=swap" />
+        <link href="https://fonts.googleapis.com/css2?family=Cause:wght@100..900&display=swap" rel="stylesheet" media="print" />
       </Head>
       <style dangerouslySetInnerHTML={{ __html: `
         /* Override global index-page header style for guesthouse to be black initially */

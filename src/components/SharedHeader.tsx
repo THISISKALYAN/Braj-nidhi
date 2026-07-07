@@ -92,7 +92,7 @@ export default function SharedHeader() {
           <div className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="mobile-menu-header">
               <Link href="/" onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center' }}>
-                <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" priority width={135} height={45} style={{ height: '45px', width: 'auto' }} />
+                <Image src="/Braj_nidhi_.webp" alt="Braj Nidhi Logo" width={135} height={45} style={{ height: '45px', width: 'auto' }} />
               </Link>
               <button className="mobile-menu-close" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close menu">
                 <X size={24} />

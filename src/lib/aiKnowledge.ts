@@ -10,7 +10,7 @@ export const BRAJ_NIDHI_KNOWLEDGE = {
     name: "Braj Nidhi",
     tagline: "Luxury Spiritual Dwelling in Vrindavan",
     description: "Braj Nidhi is an ultra-luxury spiritual guesthouse and sanctuary designed for seekers, pilgrims, and families seeking absolute tranquility, luxury, and spiritual elevation in the holy land of Vrindavan.",
-    address: "Braj Nidhi Dham, near Prem Mandir, Raman Reti, Vrindavan, Uttar Pradesh, PIN 281121",
+    address: "Braj Nidhi Guest House, Vrindavan Chandrodaya Mandir, Bhaktivedanata Swami Marg, Vrindavan, Uttar Pradesh, PIN CODE- 281121",
     phone: "+91 70377 94300",
     email: "support@thebrajnidhi.com",
     checkInTime: "12:00 PM",

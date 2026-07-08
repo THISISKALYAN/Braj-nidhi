@@ -21,7 +21,6 @@ const imagePositions: Record<string, string> = {
 const HeroSlideshow = ({ images, mobileImages }: { images: string[]; mobileImages?: string[] }) => {
   const [heroBgIndex, setHeroBgIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -29,13 +28,7 @@ const HeroSlideshow = ({ images, mobileImages }: { images: string[]; mobileImage
     };
     handleResize();
     window.addEventListener('resize', handleResize);
-    const timer = setTimeout(() => {
-      setHasLoaded(true);
-    }, 3000);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      clearTimeout(timer);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const activeImages = isMobile && mobileImages && mobileImages.length > 0 ? mobileImages : images;
@@ -47,14 +40,13 @@ const HeroSlideshow = ({ images, mobileImages }: { images: string[]; mobileImage
     return () => clearInterval(timer);
   }, [activeImages.length]);
 
+  const currentImage = activeImages[heroBgIndex] || activeImages[0];
+
   return (
     <>
       {activeImages.map((currentImage, i) => {
         const isActive = heroBgIndex === i;
         const isPrev = (heroBgIndex - 1 + activeImages.length) % activeImages.length === i;
-        if (i !== 0 && !hasLoaded && !isActive && !isPrev) return null;
-        if (i !== 0 && i !== heroBgIndex && i !== (heroBgIndex - 1 + activeImages.length) % activeImages.length && i !== (heroBgIndex + 1) % activeImages.length) return null;
-
         return (
           <motion.div
             key={currentImage}
@@ -83,9 +75,8 @@ const HeroSlideshow = ({ images, mobileImages }: { images: string[]; mobileImage
               alt="Braj Nidhi Hero"
               fill
               priority={i === 0}
-              loading={i === 0 ? "eager" : "lazy"}
-              sizes="(max-width: 768px) 100vw, 100vw"
-              quality={80}
+              sizes="100vw"
+              quality={95}
               style={{
                 objectFit: 'cover',
                 objectPosition: imagePositions[currentImage] ?? 'center'
@@ -107,17 +98,12 @@ const HeroSlideshow = ({ images, mobileImages }: { images: string[]; mobileImage
 // Self-contained Room Card Slideshow to isolate slide re-renders
 const RoomCardSlideshow = ({ images, alt, interval = 4000 }: { images: string[]; alt: string; interval?: number }) => {
   const [imgIndex, setImgIndex] = useState(0);
-  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
-    const initTimer = setTimeout(() => setHasLoaded(true), 3500);
     const timer = setInterval(() => {
       setImgIndex((prev) => (prev + 1) % images.length);
     }, interval);
-    return () => {
-      clearTimeout(initTimer);
-      clearInterval(timer);
-    };
+    return () => clearInterval(timer);
   }, [images.length, interval]);
 
   return (
@@ -125,9 +111,6 @@ const RoomCardSlideshow = ({ images, alt, interval = 4000 }: { images: string[];
       {images.map((img, i) => {
         const isActive = imgIndex === i;
         const isPrev = (imgIndex - 1 + images.length) % images.length === i;
-        if (i !== 0 && !hasLoaded && !isActive && !isPrev) return null;
-        if (i !== 0 && !isActive && !isPrev && i !== (imgIndex + 1) % images.length) return null;
-
         return (
           <motion.div
             key={img}
@@ -148,9 +131,6 @@ const RoomCardSlideshow = ({ images, alt, interval = 4000 }: { images: string[];
               src={`/${img}`}
               alt={alt}
               fill
-              loading="lazy"
-              quality={75}
-              sizes="(max-width: 768px) 100vw, 33vw"
               style={{ objectFit: 'cover', objectPosition: 'center' }}
             />
           </motion.div>

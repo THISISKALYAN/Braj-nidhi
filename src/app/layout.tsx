@@ -9,7 +9,6 @@ export const metadata: Metadata = {
 
 import LoadingTransition from "@/components/LoadingTransition";
 import { MusicProvider } from "@/lib/MusicContext";
-import NonBlockingCSS from "@/components/NonBlockingCSS";
 import { Outfit, Bebas_Neue } from 'next/font/google';
 
 const outfit = Outfit({ 
@@ -37,34 +36,21 @@ export default function RootLayout({
         {/* === Performance: DNS prefetch & preconnect for all external resources === */}
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-        <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         
-        {/* Asynchronously preload stylesheets to eliminate 2,170ms render-blocking delay */}
+        {/* === Performance: Preload hero image to improve LCP score === */}
+        <link rel="preload" as="image" href="/hero.webp" type="image/webp" />
+        
         <link
-          rel="preload"
-          as="style"
+          rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
         />
         <link
-          rel="preload"
-          as="style"
+          rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"
         />
-        <noscript>
-          <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-          />
-          <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"
-          />
-        </noscript>
       </head>
       <body className="index-page antialiased">
-        <NonBlockingCSS />
-        <Script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js" strategy="lazyOnload" />
+        <Script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js" strategy="afterInteractive" />
         <MusicProvider>
           <LoadingTransition />
           {children}

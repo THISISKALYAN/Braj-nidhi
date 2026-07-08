@@ -642,7 +642,7 @@ function RoomsComboContent() {
                 </div>
                 <div className="rcp-hotel-loc">
                   <MapPin size={13}/>
-                  Bhaktivedanata Swami Marg, Vrindavan · near Chandrodaya Mandir
+                  Chattikara Road, Vrindavan · 0.7 km from Prem Mandir
                 </div>
               </div>
               <div className="rcp-rating-box">

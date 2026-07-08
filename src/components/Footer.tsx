@@ -84,7 +84,7 @@ const Footer = () => {
               <li className="flex items-start gap-3">
                 <MapPin size={18} className="text-gold mt-1" />
                 <span className="text-white/70 text-sm leading-relaxed">
-                  Braj Nidhi Guest House, Vrindavan Chandrodaya Mandir,<br />Bhaktivedanata Swami Marg, Vrindavan, Uttar Pradesh, PIN CODE- 281121
+                  Brajnidhi Guesthouse, Raman Reti,<br />Vrindavan, Uttar Pradesh 281121
                 </span>
               </li>
               <li className="flex items-center gap-3">

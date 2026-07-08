@@ -453,7 +453,7 @@ export default function RoomUnavailablePopup({
         {/* Footer */}
         <div className="rup-footer">
           <div className="rup-footer-text">
-            <span className="rup-footer-brand">Braj Nidhi Guest House</span> &middot; Bhaktivedanata Swami Marg, Vrindavan
+            <span className="rup-footer-brand">Braj Nidhi Guesthouse</span> &middot; Chattikara Road, Vrindavan
             <br />A pure sattvic spiritual heritage property
           </div>
         </div>

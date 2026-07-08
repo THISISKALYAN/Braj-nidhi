@@ -439,8 +439,17 @@ export default function BookingPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to search rooms');
+        let errorMsg = 'Failed to search rooms';
+        try {
+          const errorData = await response.json();
+          if (errorData.error) errorMsg = errorData.error;
+        } catch { /* ignore JSON parse errors if response is plain text */ }
+        
+        console.warn('ERP searchRoomsApi warning:', errorMsg);
+        setApiConnectionStatus('error');
+        setApiErrorMsg(errorMsg);
+        setIsSearching(false);
+        return;
       }
 
       const data = await response.json();
@@ -456,7 +465,7 @@ export default function BookingPage() {
 
       }
     } catch (err: any) {
-      console.error('ERP searchRoomsApi error:', err);
+      console.warn('ERP searchRoomsApi error:', err.message || err);
       setApiConnectionStatus('error');
       setApiErrorMsg(err.message || 'ERP request failed. Running in offline sandbox.');
     } finally {

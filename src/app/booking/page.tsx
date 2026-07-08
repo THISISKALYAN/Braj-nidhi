@@ -62,8 +62,8 @@ export default function BookingPage() {
   };
   
   // Interactive Dates
-  const [checkIn, setCheckIn] = useState<string>('2026-05-18');
-  const [checkOut, setCheckOut] = useState<string>('2026-05-20');
+  const [checkIn, setCheckIn] = useState<string>('');
+  const [checkOut, setCheckOut] = useState<string>('');
   
   // Interactive Dates
 
@@ -171,6 +171,7 @@ export default function BookingPage() {
     if (lastAvailKey.current === key) return;
     lastAvailKey.current = key;
 
+    let ignore = false;
     setAvailChecking(true);
     const selectedEntries = Object.entries(roomSelections).filter(([_, qty]) => qty > 0);
     const targets = selectedEntries.length > 0 ? selectedEntries.map(([rt]) => rt) : [roomType];
@@ -188,6 +189,7 @@ export default function BookingPage() {
       ),
     )
       .then(results => {
+        if (ignore) return;
         const map: Record<string, number | null> = {};
         for (const { rt, min } of results) map[rt] = min;
         setAvailByRoomType(prev => ({ ...prev, ...map }));
@@ -204,9 +206,14 @@ export default function BookingPage() {
         } else {
           const firstRt = targets[0] || roomType;
           setAvailMinForRange(map[firstRt] ?? null);
+          setSoldOutPopup(false);
         }
       })
-      .finally(() => setAvailChecking(false));
+      .finally(() => {
+        if (!ignore) setAvailChecking(false);
+      });
+      
+    return () => { ignore = true; };
   }, [roomSelections, roomType, checkIn, checkOut]);
 
   const insufficientRoomKey = Object.keys(roomSelections).find(rt => {

@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
       checkIn,
       checkOut,
       rooms,
+      roomSelections,
       adults,
       children,
       guestName,
@@ -32,12 +33,25 @@ export async function POST(req: NextRequest) {
       gstAmount,
     } = body;
 
+    const cleanSelections: Partial<Record<RoomType, number>> = {};
+    if (roomSelections && typeof roomSelections === 'object') {
+      for (const rt of VALID_ROOM_TYPES) {
+        const q = Number(roomSelections[rt]);
+        if (!isNaN(q) && q > 0) cleanSelections[rt] = q;
+      }
+    }
+
+    const hasMultiSelections = Object.keys(cleanSelections).length > 0;
+    const effectiveRoomType: RoomType = hasMultiSelections
+      ? (Object.keys(cleanSelections)[0] as RoomType)
+      : (roomType as RoomType);
+
     // ── Input validation ──────────────────────────────────────────────────────
-    if (!roomType || !checkIn || !checkOut || !rooms) {
+    if (!effectiveRoomType || !checkIn || !checkOut || (!rooms && !hasMultiSelections)) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (!VALID_ROOM_TYPES.includes(roomType as RoomType)) {
+    if (!VALID_ROOM_TYPES.includes(effectiveRoomType)) {
       return Response.json({ error: 'Invalid roomType' }, { status: 400 });
     }
 
@@ -55,7 +69,9 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: 'Cannot book past dates' }, { status: 400 });
     }
 
-    const numRooms = Number(rooms);
+    const numRooms = hasMultiSelections
+      ? Object.values(cleanSelections).reduce((a, b) => (a || 0) + (b || 0), 0)
+      : Number(rooms);
     if (isNaN(numRooms) || numRooms < 1 || numRooms > 10) {
       return Response.json({ error: 'rooms must be between 1 and 10' }, { status: 400 });
     }
@@ -81,10 +97,11 @@ export async function POST(req: NextRequest) {
 
     // ── Create booking ────────────────────────────────────────────────────────
     const result = await createBooking({
-      roomType: roomType as RoomType,
+      roomType: effectiveRoomType,
       checkIn,
       checkOut,
       rooms: numRooms,
+      roomSelections: hasMultiSelections ? cleanSelections : undefined,
       adults: numAdults,
       children: numChildren,
       guestName: cleanName,

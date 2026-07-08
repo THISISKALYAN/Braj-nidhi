@@ -159,38 +159,63 @@ export default function BookingPage() {
 
   // ── Real-time ERP availability check ───────────────────────────────────────
   const [availMinForRange, setAvailMinForRange] = useState<number | null>(null);
+  const [availByRoomType, setAvailByRoomType] = useState<Record<string, number | null>>({});
   const [availChecking, setAvailChecking] = useState<boolean>(false);
   const [soldOutPopup, setSoldOutPopup] = useState<boolean>(false);
   const lastAvailKey = useRef<string>('');
 
   useEffect(() => {
     if (!checkIn || !checkOut || checkIn >= checkOut) return;
-    const key = `${roomType}|${checkIn}|${checkOut}|${rooms}`;
+    const selectionsStr = JSON.stringify(roomSelections);
+    const key = `${selectionsStr}|${checkIn}|${checkOut}`;
     if (lastAvailKey.current === key) return;
     lastAvailKey.current = key;
 
     setAvailChecking(true);
-    const ctrl = new AbortController();
-    fetch(
-      `/api/availability?roomType=${roomType}&from=${checkIn}&to=${checkOut}&rooms=${rooms}`,
-      { signal: ctrl.signal },
+    const selectedEntries = Object.entries(roomSelections).filter(([_, qty]) => qty > 0);
+    const targets = selectedEntries.length > 0 ? selectedEntries.map(([rt]) => rt) : [roomType];
+
+    Promise.all(
+      targets.map(rt =>
+        fetch(`/api/availability?roomType=${rt}&from=${checkIn}&to=${checkOut}&rooms=1`)
+          .then(r => (r.ok ? r.json() : null))
+          .then(data => {
+            if (!data?.availability) return { rt, min: null };
+            const values = Object.values(data.availability as Record<string, number>);
+            return { rt, min: values.length ? Math.min(...values) : 0 };
+          })
+          .catch(() => ({ rt, min: null })),
+      ),
     )
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data?.availability) return;
-        const values = Object.values(data.availability as Record<string, number>);
-        const min = values.length ? Math.min(...values) : 0;
-        setAvailMinForRange(min);
-        if (min < rooms) setSoldOutPopup(true);
+      .then(results => {
+        const map: Record<string, number | null> = {};
+        for (const { rt, min } of results) map[rt] = min;
+        setAvailByRoomType(prev => ({ ...prev, ...map }));
+
+        const insufficientEntry = selectedEntries.find(([rt, qty]) => {
+          const m = map[rt];
+          return m !== null && m !== undefined && m < qty;
+        });
+
+        if (insufficientEntry) {
+          const [insufRt, qty] = insufficientEntry;
+          setAvailMinForRange(map[insufRt] ?? 0);
+          setSoldOutPopup(true);
+        } else {
+          const firstRt = targets[0] || roomType;
+          setAvailMinForRange(map[firstRt] ?? null);
+        }
       })
-      .catch(() => { /* network error — keep prior state */ })
       .finally(() => setAvailChecking(false));
+  }, [roomSelections, roomType, checkIn, checkOut]);
 
-    return () => ctrl.abort();
-  }, [roomType, checkIn, checkOut, rooms]);
+  const insufficientRoomKey = Object.keys(roomSelections).find(rt => {
+    const qty = roomSelections[rt] || 0;
+    const avail = availByRoomType[rt];
+    return qty > 0 && avail !== null && avail !== undefined && avail < qty;
+  });
 
-  const isInsufficient =
-    availMinForRange !== null && availMinForRange < rooms;
+  const isInsufficient = Boolean(insufficientRoomKey);
 
   // Quick special request badges
   const [specialRequests, setSpecialRequests] = useState<string[]>([]);
@@ -206,8 +231,15 @@ export default function BookingPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const requestBadges = ["Late Check-out (2 hrs)", "Spiritual Literature in Room", "Quiet Room", "Extra Bedding", "Temple Prasadam Delivery"];
 
+  const normalizeRoomKey = (raw: string): 'deluxe2' | 'deluxe3' | 'deluxe4' => {
+    const s = (raw || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (s.includes('royal') || s.includes('deluxe4') || s.includes('family') || s.includes('quad') || s.endsWith('4')) return 'deluxe4';
+    if (s.includes('deluxe3') || s.includes('triple') || s.endsWith('3')) return 'deluxe3';
+    return 'deluxe2';
+  };
+
   const getRoomPrice = (type: string): number => {
-    switch (type) {
+    switch (normalizeRoomKey(type)) {
       case 'deluxe3': return 4500;
       case 'deluxe4': return 5500;
       case 'deluxe2':
@@ -217,7 +249,7 @@ export default function BookingPage() {
   };
 
   const getRoomTitle = (type: string): string => {
-    switch (type) {
+    switch (normalizeRoomKey(type)) {
       case 'deluxe3': return "Deluxe 3 – 3 Bedded Room";
       case 'deluxe4': return "Deluxe 4 – 4 Bedded Room";
       case 'deluxe2':
@@ -227,7 +259,7 @@ export default function BookingPage() {
   };
 
   const getRoomImage = (type: string): string => {
-    switch (type) {
+    switch (normalizeRoomKey(type)) {
       case 'deluxe3': return "/d3.webp";
       case 'deluxe4': return "/DSC05963-HDR.webp";
       case 'deluxe2':
@@ -422,21 +454,6 @@ export default function BookingPage() {
         // so we intentionally do NOT overwrite livePrices here — that caused the displayed
         // ₹3,500/night to be silently replaced by an ERP figure (e.g. 6666.66) on the fare summary.
 
-        // Auto-select first available room type if current selection becomes sold out
-        const hasDeluxe2 = data.availableRooms.some((r: any) => erpToWebsiteType(r.roomTypeId) === 'deluxe2');
-        const hasDeluxe3 = data.availableRooms.some((r: any) => erpToWebsiteType(r.roomTypeId) === 'deluxe3');
-        const hasDeluxe4 = data.availableRooms.some((r: any) => erpToWebsiteType(r.roomTypeId) === 'deluxe4');
-
-        if (roomType === 'deluxe2' && !hasDeluxe2) {
-          if (hasDeluxe3) setRoomSelections({ 'deluxe3': rooms });
-          else if (hasDeluxe4) setRoomSelections({ 'deluxe4': rooms });
-        } else if (roomType === 'deluxe3' && !hasDeluxe3) {
-          if (hasDeluxe2) setRoomSelections({ 'deluxe2': rooms });
-          else if (hasDeluxe4) setRoomSelections({ 'deluxe4': rooms });
-        } else if (roomType === 'deluxe4' && !hasDeluxe4) {
-          if (hasDeluxe2) setRoomSelections({ 'deluxe2': rooms });
-          else if (hasDeluxe3) setRoomSelections({ 'deluxe3': rooms });
-        }
       }
     } catch (err: any) {
       console.error('ERP searchRoomsApi error:', err);
@@ -449,11 +466,8 @@ export default function BookingPage() {
 
   // Helper to check room availability on live ERP API responses
   const erpToWebsiteType = (erpId: string): 'deluxe2' | 'deluxe3' | 'deluxe4' | null => {
-    const id = (erpId || '').toUpperCase();
-    if (id === 'BN-DELUXE-2') return 'deluxe2';
-    if (id === 'BN-DELUXE-3') return 'deluxe3';
-    if (id === 'BN-DELUXE-4') return 'deluxe4';
-    return null;
+    if (!erpId) return null;
+    return normalizeRoomKey(erpId);
   };
 
   const isCategoryAvailable = (type: 'deluxe2' | 'deluxe3' | 'deluxe4'): boolean => {
@@ -559,17 +573,22 @@ export default function BookingPage() {
 
     // Re-check availability right before charging — date/inventory could have changed.
     try {
-      const r = await fetch(
-        `/api/availability?roomType=${roomType}&from=${checkIn}&to=${checkOut}&rooms=${rooms}`,
-      );
-      if (r.ok) {
-        const data = await r.json();
-        const values = Object.values((data.availability ?? {}) as Record<string, number>);
-        const min = values.length ? Math.min(...values) : 0;
-        setAvailMinForRange(min);
-        if (min < rooms) {
-          setSoldOutPopup(true);
-          return;
+      const selectedEntries = Object.entries(roomSelections).filter(([_, qty]) => qty > 0);
+      const targets = selectedEntries.length > 0 ? selectedEntries : [[roomType, rooms] as [string, number]];
+      for (const [rt, qty] of targets) {
+        const r = await fetch(
+          `/api/availability?roomType=${rt}&from=${checkIn}&to=${checkOut}&rooms=1`,
+        );
+        if (r.ok) {
+          const data = await r.json();
+          const values = Object.values((data.availability ?? {}) as Record<string, number>);
+          const min = values.length ? Math.min(...values) : 0;
+          setAvailByRoomType(prev => ({ ...prev, [rt]: min }));
+          if (min < qty) {
+            setAvailMinForRange(min);
+            setSoldOutPopup(true);
+            return;
+          }
         }
       }
     } catch { /* let booking attempt continue if check itself failed */ }
@@ -670,12 +689,13 @@ export default function BookingPage() {
                   phone: guestDetails.phone,
                 },
                 rooms: Object.entries(roomSelections).filter(([_, qty]) => qty > 0).map(([rt, qty]) => {
-                  const roomPrice = livePrices[rt] || getRoomPrice(rt);
+                  const normKey = normalizeRoomKey(rt);
+                  const roomPrice = livePrices[normKey] || livePrices[rt] || getRoomPrice(normKey);
                   const roomTotal = roomPrice * nights * qty;
                   const roomTaxable = Math.round(roomTotal / (1 + gstRate));
                   const roomGst = roomTotal - roomTaxable;
                   return {
-                    room_type: erpRoomTypeMap[rt] || 'BN-DELUXE-2',
+                    room_type: erpRoomTypeMap[normKey] || 'BN-DELUXE-2',
                     qty,
                     rate: roomPrice,
                     amount: roomTotal,
@@ -750,6 +770,7 @@ export default function BookingPage() {
                   checkIn,
                   checkOut,
                   rooms,
+                  roomSelections,
                   adults,
                   children,
                   guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
@@ -2518,7 +2539,7 @@ export default function BookingPage() {
                       <div key={rt} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{count}x {getRoomTitle(rt).split(' – ')[0]}</div>
-                          <div style={{ fontSize: '10px', color: '#6B7280' }}>₹{getRoomPrice(rt)} / night</div>
+                          <div style={{ fontSize: '10px', color: '#6B7280' }}>₹{(livePrices[normalizeRoomKey(rt)] || livePrices[rt] || getRoomPrice(rt)).toLocaleString('en-IN')} / night</div>
                         </div>
                         <img loading="lazy" decoding="async" src={getRoomImage(rt)} alt={rt} style={{ width: '54px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #e5e7eb' }} />
                       </div>
@@ -3140,7 +3161,8 @@ export default function BookingPage() {
                       Room Charges
                     </div>
                     {Object.entries(roomSelections).filter(([_, count]) => count > 0).map(([rt, count]) => {
-                      const price = livePrices[rt] || getRoomPrice(rt);
+                      const normKey = normalizeRoomKey(rt);
+                      const price = livePrices[normKey] || livePrices[rt] || getRoomPrice(rt);
                       return (
                         <div key={rt} style={{ marginBottom: '8px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151', marginBottom: 4 }}>
@@ -3354,7 +3376,7 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
                       <div className="conf-price-row">
                         <div className="conf-price-tag">
                           <MapPin size={13} style={{ color: '#C89B3C' }} />
-                          ₹{(livePrices[rt] || getRoomPrice(rt)).toLocaleString()} / night
+                          ₹{(livePrices[normalizeRoomKey(rt)] || livePrices[rt] || getRoomPrice(rt)).toLocaleString()} / night
                         </div>
                         <div className="conf-ref-badge"><Check size={10} />{bookingRef}</div>
                       </div>
@@ -3515,14 +3537,22 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
       <RoomUnavailablePopup
         isOpen={soldOutPopup}
         onClose={() => setSoldOutPopup(false)}
-        roomName={getRoomTitle(roomType)}
-        requested={rooms}
-        available={Math.max(0, availMinForRange ?? 0)}
+        roomName={getRoomTitle(insufficientRoomKey || roomType)}
+        requested={insufficientRoomKey ? (roomSelections[insufficientRoomKey] || 1) : rooms}
+        available={Math.max(0, (insufficientRoomKey ? availByRoomType[insufficientRoomKey] : availMinForRange) ?? 0)}
         checkIn={checkIn}
         checkOut={checkOut}
         onTryOtherDates={() => { setSoldOutPopup(false); setShowModify(true); }}
-        onBookAvailable={(availMinForRange ?? 0) > 0 && (availMinForRange ?? 0) < rooms
-          ? () => { setRooms(availMinForRange!); setSoldOutPopup(false); }
+        onBookAvailable={((insufficientRoomKey ? availByRoomType[insufficientRoomKey] : availMinForRange) ?? 0) > 0 && ((insufficientRoomKey ? availByRoomType[insufficientRoomKey] : availMinForRange) ?? 0) < (insufficientRoomKey ? (roomSelections[insufficientRoomKey] || 1) : rooms)
+          ? () => {
+              const avail = (insufficientRoomKey ? availByRoomType[insufficientRoomKey] : availMinForRange) ?? 0;
+              if (insufficientRoomKey) {
+                setRoomSelections(prev => ({ ...prev, [insufficientRoomKey]: avail }));
+              } else {
+                setRooms(avail);
+              }
+              setSoldOutPopup(false); 
+            }
           : undefined}
       />
 

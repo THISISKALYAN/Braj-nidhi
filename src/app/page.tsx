@@ -816,7 +816,7 @@ Event: ${bookingData.eventType}`);
                             bookingData.roomCounts.deluxe2 + bookingData.roomCounts.deluxe3 + bookingData.roomCounts.deluxe4
                           }&adults=${
                             (bookingData.roomCounts.deluxe2 * 2) + (bookingData.roomCounts.deluxe3 * 3) + (bookingData.roomCounts.deluxe4 * 4)
-                          }&children=0&guests=${encodeURIComponent(bookingData.guests)}`}
+                          }&children=0&guests=${encodeURIComponent(bookingData.guests)}&deluxe2=${bookingData.roomCounts.deluxe2}&deluxe3=${bookingData.roomCounts.deluxe3}&deluxe4=${bookingData.roomCounts.deluxe4}`}
                           className="search-circle-button"
                           aria-label="Search Suites"
                         >

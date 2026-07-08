@@ -95,7 +95,35 @@ function RoomsComboContent() {
   const nights     = getNights(checkIn, checkOut);
   const totalGuests = adults + children;
 
-  const [roomSelections, setRoomSelections] = useState<Record<string, number>>({});
+  const [roomSelections, setRoomSelections] = useState<Record<string, number>>(() => {
+    const init: Record<string, number> = {};
+    ['deluxe2', 'deluxe3', 'deluxe4'].forEach(key => {
+      const val = searchParams.get(key);
+      if (val && !isNaN(Number(val)) && Number(val) > 0) {
+        init[key] = Number(val);
+      }
+    });
+    if (Object.keys(init).length === 0) {
+      const paramRoom = searchParams.get('roomType') || searchParams.get('room') || searchParams.get('room_type');
+      const paramRooms = searchParams.get('rooms');
+      const qty = (paramRooms && !isNaN(Number(paramRooms))) ? Math.max(1, Number(paramRooms)) : 1;
+      if (paramRoom) {
+        const s = paramRoom.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (s.includes('royal') || s.includes('deluxe4') || s.endsWith('4')) init['deluxe4'] = qty;
+        else if (s.includes('deluxe3') || s.includes('triple') || s.endsWith('3')) init['deluxe3'] = qty;
+        else init['deluxe2'] = qty;
+      }
+    }
+    return init;
+  });
+
+  const selectedRoomsCount = Object.values(roomSelections).reduce((a, b) => a + b, 0);
+  const displayRoomsCount = selectedRoomsCount > 0 ? selectedRoomsCount : roomsCount;
+  const selectedMaxGuests = Object.entries(roomSelections).reduce((sum, [k, v]) => {
+    const room = ROOMS.find(r => r.key === k);
+    return sum + (room ? room.maxGuests * v : 0);
+  }, 0);
+  const displayGuestsCount = selectedRoomsCount > 0 ? selectedMaxGuests : totalGuests;
   const [expandedRoom, setExpandedRoom] = useState<string | null>('deluxe2');
   const [scrolled, setScrolled] = useState(false);
   const [cameFromGuesthouse, setCameFromGuesthouse] = useState(false);
@@ -146,7 +174,7 @@ function RoomsComboContent() {
     try {
       const results = await Promise.all(
         types.map(rt =>
-          fetch(`/api/availability?roomType=${rt}&from=${checkIn}&to=${checkOut}&rooms=${roomsCount}`)
+          fetch(`/api/availability?roomType=${rt}&from=${checkIn}&to=${checkOut}&rooms=1`)
             .then(r => r.ok ? r.json() : null)
             .then(data => {
               if (!data?.availability) return { rt, min: null };
@@ -469,7 +497,7 @@ function RoomsComboContent() {
         <div className="rcp-strip-sep"/>
         <div className="rcp-strip-item">
           <Users size={15}/>
-          <span><strong>{roomsCount}</strong> Room{roomsCount > 1 ? 's' : ''}, <strong>{totalGuests}</strong> Guest{totalGuests > 1 ? 's' : ''}</span>
+          <span><strong>{displayRoomsCount}</strong> Room{displayRoomsCount > 1 ? 's' : ''}, <strong>{displayGuestsCount}</strong> Guest{displayGuestsCount > 1 ? 's' : ''}</span>
         </div>
         <Link href="/" className="rcp-strip-edit">Modify Search ›</Link>
       </div>
@@ -488,7 +516,7 @@ function RoomsComboContent() {
             const isExpanded  = expandedRoom === room.key;
             const isSelected  = (roomSelections[room.key] || 0) > 0;
             const avail = roomAvail[room.key];
-            const isSoldOut = avail !== null && avail < roomsCount;
+            const isSoldOut = avail !== null && avail <= 0;
 
             return (
               <div key={room.key} className={`rcp-room-card${isSelected ? ' selected' : ''}`} style={isSoldOut ? { opacity: 0.7 } : undefined}>
@@ -697,7 +725,7 @@ function RoomsComboContent() {
             <div className="rcp-guests-row">
               <Users size={16}/>
               <div className="rcp-guests-info">
-                <div className="main">{roomsCount} Room{roomsCount>1?'s':''}, {totalGuests} Guest{totalGuests>1?'s':''}</div>
+                <div className="main">{displayRoomsCount} Room{displayRoomsCount>1?'s':''}, {displayGuestsCount} Guest{displayGuestsCount>1?'s':''}</div>
                 <div className="sub">Braj Nidhi Guesthouse, Vrindavan</div>
               </div>
             </div>
@@ -713,7 +741,7 @@ function RoomsComboContent() {
                 </div>
                 {ROOMS.map(r => {
                   const a = roomAvail[r.key];
-                  const soldOut = a !== null && a < roomsCount;
+                  const soldOut = a !== null && a <= 0;
                   return (
                     <div key={r.key} style={{
                       display:'flex',alignItems:'center',justifyContent:'space-between',

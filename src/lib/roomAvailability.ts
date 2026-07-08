@@ -279,6 +279,17 @@ const ERP_ROOM_TYPE_MAP: Record<RoomType, string> = {
   deluxe4: process.env.ERP_ROOM_TYPE_DELUXE4 || 'BN-DELUXE-4',
 };
 
+export function resolveErpRoomTypeId(roomType: string): string {
+  const s = (roomType || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (s.includes('royal') || s.includes('deluxe4') || s.includes('family') || s.includes('quad') || s.endsWith('4')) {
+    return ERP_ROOM_TYPE_MAP.deluxe4;
+  }
+  if (s.includes('deluxe3') || s.includes('triple') || s.endsWith('3')) {
+    return ERP_ROOM_TYPE_MAP.deluxe3;
+  }
+  return ERP_ROOM_TYPE_MAP.deluxe2;
+}
+
 // In-memory cache for ERP availability (10s TTL) — short enough for near-instant
 // sync when ERP changes, long enough to batch rapid UI interactions.
 type ErpCacheEntry = { fetchedAt: number; data: Record<string, number> };
@@ -457,7 +468,7 @@ export async function syncToERP(booking: BookingRecord): Promise<{
   status: 'synced' | 'failed';
   error?: string;
 }> {
-  const erpRoomTypeId = ERP_ROOM_TYPE_MAP[booking.roomType];
+  const erpRoomTypeId = resolveErpRoomTypeId(booking.roomType);
 
   if (!ERP_BASE || !process.env.ERP_API_KEY) {
     return { status: 'failed', error: 'ERP credentials not configured' };
@@ -536,11 +547,91 @@ export async function syncToERP(booking: BookingRecord): Promise<{
 
 // ─── Booking management ───────────────────────────────────────────────────────
 
+export async function syncMultiToERP(bookingsToSync: BookingRecord[]): Promise<{
+  erpReservationId?: string;
+  status: 'synced' | 'failed';
+  error?: string;
+}> {
+  if (bookingsToSync.length === 0) return { status: 'failed', error: 'No bookings to sync' };
+  const primary = bookingsToSync[0];
+
+  if (!ERP_BASE || !process.env.ERP_API_KEY) {
+    return { status: 'failed', error: 'ERP credentials not configured' };
+  }
+
+  try {
+    const res = await fetch(`${ERP_BASE}.create_reservation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: ERP_AUTH },
+      body: JSON.stringify({
+        property: ERP_PROPERTY,
+        check_in_date: primary.checkIn,
+        check_out_date: primary.checkOut,
+        booking_type: ERP_BOOKING_TYPE,
+        hold_type: ERP_HOLD_TYPE,
+        ...(primary.totalAmount !== undefined && {
+          amount: primary.totalAmount,
+          total_amount: primary.totalAmount,
+          taxable_amount: primary.taxableAmount,
+          gst_amount: primary.gstAmount,
+          gst_rate: 5,
+          tax_rate: 5,
+        }),
+        guest: {
+          name: primary.guestName || 'Guest',
+          email: primary.guestEmail || '',
+          phone: primary.guestPhone || '',
+        },
+        rooms: bookingsToSync.map(b => {
+          const erpRoomTypeId = resolveErpRoomTypeId(b.roomType);
+          const itemAmount = b.totalAmount;
+          const itemRate = itemAmount !== undefined ? Math.round(itemAmount / (b.rooms || 1)) : ROOM_PRICES[b.roomType] || 3500;
+          return {
+            room_type: erpRoomTypeId,
+            qty: b.rooms,
+            rate: itemRate,
+            ...(itemAmount !== undefined && {
+              amount: itemAmount,
+              taxable_amount: b.taxableAmount,
+              gst_amount: b.gstAmount,
+              gst_rate: 5,
+              tax_rate: 5,
+            }),
+            adults: Math.max(1, b.adults || 1),
+            children: b.children || 0,
+          };
+        }),
+        ...(primary.razorpayPaymentId && { gateway_payment_id: primary.razorpayPaymentId }),
+        ...(primary.razorpayOrderId && { gateway_order_id: primary.razorpayOrderId }),
+      }),
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    const text = await res.text();
+    let data: any;
+    try { data = JSON.parse(text); } catch { data = { raw: text }; }
+
+    if (!res.ok || data.exc || data.exception) {
+      const errMsg = data._error_message || data.exception || JSON.stringify(data).slice(0, 200);
+      return { status: 'failed', error: errMsg };
+    }
+
+    const result = data.message ?? data;
+    const erpReservationId: string | undefined =
+      result.reservationId ?? result.reservation_id ?? result.name;
+    ERP_CACHE.clear();
+    return { status: 'synced', erpReservationId };
+  } catch (e: any) {
+    return { status: 'failed', error: e.message ?? 'Network error' };
+  }
+}
+
 export async function createBooking(params: {
   roomType: RoomType;
   checkIn: string;
   checkOut: string;
   rooms: number;
+  roomSelections?: Partial<Record<RoomType, number>>;
   adults: number;
   children: number;
   guestName?: string;
@@ -553,30 +644,44 @@ export async function createBooking(params: {
   taxableAmount?: number;
   gstAmount?: number;
 }): Promise<{ success: boolean; booking?: BookingRecord; error?: string; erpError?: string }> {
-  // Check availability
-  const avail = await getAvailabilityForRange(params.roomType, params.checkIn, params.checkOut);
-  const values = Object.values(avail);
-  if (values.length === 0) return { success: false, error: 'Invalid date range' };
-  const minAvail = Math.min(...values);
+  // Determine all selected room types & quantities
+  const rawSelections: [RoomType, number][] = params.roomSelections && Object.keys(params.roomSelections).length > 0
+    ? (Object.entries(params.roomSelections).filter(([_, qty]) => Number(qty) > 0) as [RoomType, number][])
+    : [[params.roomType, params.rooms]];
 
-  if (minAvail < params.rooms) {
-    return {
-      success: false,
-      error: `Only ${minAvail} room(s) available for the selected dates`,
-    };
+  const selections: [RoomType, number][] = rawSelections.length > 0
+    ? rawSelections
+    : [[params.roomType, params.rooms]];
+
+  // Check availability for every selected room type
+  for (const [rt, qty] of selections) {
+    const avail = await getAvailabilityForRange(rt, params.checkIn, params.checkOut);
+    const values = Object.values(avail);
+    if (values.length === 0) return { success: false, error: 'Invalid date range' };
+    const minAvail = Math.min(...values);
+
+    if (minAvail < qty) {
+      const roomName = ROOM_NAMES[rt] || rt;
+      return {
+        success: false,
+        error: `Only ${minAvail} room(s) available for ${roomName} for the selected dates`,
+      };
+    }
   }
 
-  // Build and save booking
+  // Build and save booking records for all selected room types
   const bookings = await readBookings();
   const alreadySynced = !!params.erpReservationId;
-  const booking: BookingRecord = {
-    id: `BK${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
-    roomType: params.roomType,
+  const baseId = `BK${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+
+  const createdRecords: BookingRecord[] = selections.map(([rt, qty], idx) => ({
+    id: idx === 0 ? baseId : `${baseId}-${idx}`,
+    roomType: rt,
     checkIn: params.checkIn,
     checkOut: params.checkOut,
-    rooms: params.rooms,
-    adults: params.adults,
-    children: params.children,
+    rooms: qty,
+    adults: idx === 0 ? params.adults : 0,
+    children: idx === 0 ? params.children : 0,
     guestName: params.guestName,
     guestEmail: params.guestEmail,
     guestPhone: params.guestPhone,
@@ -586,12 +691,12 @@ export async function createBooking(params: {
     erpSyncStatus: alreadySynced ? 'synced' : 'pending',
     razorpayPaymentId: params.razorpayPaymentId,
     razorpayOrderId: params.razorpayOrderId,
-    totalAmount: params.totalAmount,
-    taxableAmount: params.taxableAmount,
-    gstAmount: params.gstAmount,
-  };
+    totalAmount: idx === 0 ? params.totalAmount : undefined,
+    taxableAmount: idx === 0 ? params.taxableAmount : undefined,
+    gstAmount: idx === 0 ? params.gstAmount : undefined,
+  }));
 
-  bookings.push(booking);
+  bookings.push(...createdRecords);
   await writeBookings(bookings);
 
   // Invalidate ERP cache so next availability check is fresh
@@ -601,23 +706,25 @@ export async function createBooking(params: {
   let erpError: string | undefined;
   if (!alreadySynced) {
     try {
-      const erpResult = await syncToERP(booking);
+      const erpResult = await syncMultiToERP(createdRecords);
       const all = await readBookings();
-      const idx = all.findIndex(b => b.id === booking.id);
-      if (idx !== -1) {
-        all[idx].erpSyncStatus = erpResult.status;
-        if (erpResult.erpReservationId) all[idx].erpReservationId = erpResult.erpReservationId;
-        await writeBookings(all);
-        booking.erpSyncStatus = erpResult.status;
-        booking.erpReservationId = erpResult.erpReservationId;
+      for (const rec of createdRecords) {
+        const idx = all.findIndex(b => b.id === rec.id);
+        if (idx !== -1) {
+          all[idx].erpSyncStatus = erpResult.status;
+          if (erpResult.erpReservationId) all[idx].erpReservationId = erpResult.erpReservationId;
+        }
+        rec.erpSyncStatus = erpResult.status;
+        if (erpResult.erpReservationId) rec.erpReservationId = erpResult.erpReservationId;
       }
+      await writeBookings(all);
       if (erpResult.status === 'failed') erpError = erpResult.error;
     } catch (e: any) {
       erpError = e.message;
     }
   }
 
-  return { success: true, booking, erpError };
+  return { success: true, booking: createdRecords[0], erpError };
 }
 
 export async function cancelBooking(id: string): Promise<boolean> {

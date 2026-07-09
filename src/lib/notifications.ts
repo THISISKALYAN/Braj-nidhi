@@ -23,6 +23,7 @@ export interface NotificationResult {
   email: { sent: boolean; error?: string };
   whatsapp: { sent: boolean; error?: string };
   adminWhatsapp: { sent: boolean; error?: string };
+  sms?: { sent: boolean; error?: string };
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -390,6 +391,43 @@ async function sendWhatsAppCallMeBot(phone: string, message: string): Promise<{ 
   }
 }
 
+// ─── SMS via Fast2SMS (Popular India SMS Gateway) ──────────────────────────────
+async function sendSMS(phone: string, p: BookingNotificationPayload): Promise<{ sent: boolean; error?: string }> {
+  const apiKey = process.env.FAST2SMS_API_KEY;
+  if (!apiKey) {
+    return { sent: false, error: 'Fast2SMS not configured (FAST2SMS_API_KEY)' };
+  }
+
+  const cleanPhone = phone.replace(/[^0-9]/g, '').slice(-10); // 10-digit Indian number
+  const message = `Braj Nidhi Booking Confirmed! Ref: ${p.bookingRef}. Room: ${p.roomName}. Check-in: ${fmtDate(p.checkIn)} 12 PM. Total: Rs.${p.total}. Radhe Radhe!`;
+
+  try {
+    const res = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+      method: 'POST',
+      headers: {
+        'authorization': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        route: 'q',
+        message: message,
+        language: 'english',
+        flash: 0,
+        numbers: cleanPhone,
+      }),
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    const data = await res.json();
+    if (!data.return) {
+      return { sent: false, error: data.message || 'Fast2SMS failed' };
+    }
+    return { sent: true };
+  } catch (e: any) {
+    return { sent: false, error: e.message };
+  }
+}
+
 // ─── Main entry point ─────────────────────────────────────────────────────────
 
 export async function sendBookingNotifications(
@@ -398,7 +436,7 @@ export async function sendBookingNotifications(
   const adminPhone = process.env.ADMIN_WHATSAPP_PHONE ?? '7037794300';
 
   // Run all in parallel — failures in one channel don't block others
-  const [emailResult, guestWaResult, adminWaResult, ccAdminWaResult] = await Promise.all([
+  const [emailResult, guestWaResult, adminWaResult, ccAdminWaResult, smsResult] = await Promise.all([
     // 1. Email to guest (+ BCC to yourself)
     sendEmail(p),
 
@@ -410,13 +448,16 @@ export async function sendBookingNotifications(
     
     // 4. CC admin on the exact same message sent to the guest
     sendWhatsAppMeta('7037794300', buildWhatsAppMessage(p)),
+
+    // 5. SMS alert to guest via Fast2SMS
+    sendSMS(p.guestPhone, p),
   ]);
 
-  // If Meta guest WA failed, log it but don't retry (guest already gets email)
   const result: NotificationResult = {
     email: emailResult,
     whatsapp: guestWaResult,
     adminWhatsapp: adminWaResult,
+    sms: smsResult,
   };
 
   console.log('[Notifications]', JSON.stringify(result, null, 2));

@@ -143,6 +143,7 @@ export default function BookingPage() {
   const [razorpayPaymentId, setRazorpayPaymentId] = useState<string>('');
   const [razorpayOrderId, setRazorpayOrderId] = useState<string>('');
   const [reservationError, setReservationError] = useState<{ paymentId: string; message: string } | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // ERP Live API Connection States
   const [reservationId, setReservationId] = useState<string>('');
@@ -612,6 +613,7 @@ export default function BookingPage() {
     setPaymentLoading(true);
     setPaymentStepText('Securing your room...');
     setReservationError(null);
+    setPaymentError(null);
     setCurrentStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -864,16 +866,21 @@ export default function BookingPage() {
       const rzp = new (window as any).Razorpay(options);
       rzp.on('payment.failed', (response: any) => {
         setPaymentLoading(false);
-        setCurrentStep(1);
-        alert(`Payment failed: ${response.error.description}`);
+        const rawDesc = response?.error?.description || 'Your payment did not go through. Please try another payment method.';
+        const cleanDesc = rawDesc
+          .replace(/\s*or contact your bank\.?/gi, '.')
+          .replace(/\s*contact your bank\.?/gi, '')
+          .replace(/\.\./g, '.')
+          .trim();
+        setPaymentError(cleanDesc);
       });
       rzp.open();
 
     } catch (error: any) {
       console.error('Payment error:', error);
       setPaymentLoading(false);
+      setPaymentError(error.message || 'Could not initiate payment order.');
       setCurrentStep(1);
-      alert(`Payment Error: ${error.message}`);
     }
   };
 
@@ -2526,6 +2533,63 @@ export default function BookingPage() {
         
         {currentStep === 1 && (
           <>
+            {paymentError && (
+              <div style={{
+                background: '#fef2f2',
+                border: '1px solid #fee2e2',
+                borderLeft: '4px solid #ef4444',
+                borderRadius: '12px',
+                padding: '16px 20px',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.08)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: '#fee2e2',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#dc2626',
+                    fontWeight: '800',
+                    fontSize: '18px',
+                    flexShrink: 0
+                  }}>
+                    ✕
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: '700', color: '#991b1b', marginBottom: '2px', fontFamily: 'Outfit, sans-serif' }}>
+                      Payment Could Not Be Completed
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#7f1d1d', lineHeight: '1.4' }}>
+                      {paymentError}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setPaymentError(null)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#991b1b',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    padding: '4px 8px',
+                    borderRadius: '6px'
+                  }}
+                  title="Dismiss"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
             <div className="booking-grid-mmt">
             
             {/* LEFT SIDE CONTENT - GUEST & ROOM SELECTIONS */}

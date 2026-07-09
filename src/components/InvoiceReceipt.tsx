@@ -2,32 +2,54 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Mail, Phone, Globe } from 'lucide-react';
 
+export interface InvoiceItem {
+  name: string;
+  subtitle?: string;
+  price: number;
+  qty: number;
+  total: number;
+}
+
 interface InvoiceReceiptProps {
   bookingRef: string;
   date: string;
+  checkIn?: string;
+  checkOut?: string;
   guestName: string;
   guestEmail: string;
   guestPhone: string;
+  roomsCount?: number;
+  adults?: number;
+  children?: number;
+  paymentId?: string;
   roomTitle: string;
   pricePerNight: number;
   nights: number;
   subtotal: number;
   tax: number;
   grandTotal: number;
+  items?: InvoiceItem[];
 }
 
 export default function InvoiceReceipt({
   bookingRef,
   date,
+  checkIn,
+  checkOut,
   guestName,
   guestEmail,
   guestPhone,
+  roomsCount,
+  adults,
+  children,
+  paymentId,
   roomTitle,
   pricePerNight,
   nights,
   subtotal,
   tax,
-  grandTotal
+  grandTotal,
+  items
 }: InvoiceReceiptProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -36,6 +58,17 @@ export default function InvoiceReceipt({
   }, []);
 
   if (!mounted) return null;
+
+  const totalRooms = roomsCount || 1;
+  const displayItems = items && items.length > 0 ? items : [
+    {
+      name: roomTitle,
+      subtitle: `${totalRooms} Room${totalRooms > 1 ? 's' : ''} × ${nights} Night${nights > 1 ? 's' : ''}`,
+      price: pricePerNight,
+      qty: totalRooms * nights,
+      total: pricePerNight * totalRooms * nights
+    }
+  ];
 
   return createPortal(
     <div className="invoice-receipt-container">
@@ -59,21 +92,51 @@ export default function InvoiceReceipt({
 
       {/* Details Section */}
       <div className="inv-details">
-        <div className="inv-details-grid">
-          <div className="inv-label">Invoice No.</div>
-          <div className="inv-colon">:</div>
-          <div className="inv-value">{bookingRef}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '10px' }}>
+          <div className="inv-details-grid" style={{ display: 'grid', gridTemplateColumns: '100px 10px 1fr', rowGap: '6px' }}>
+            <div className="inv-label">Invoice No.</div>
+            <div className="inv-colon">:</div>
+            <div className="inv-value"><strong>{bookingRef}</strong></div>
 
-          <div className="inv-label">Date</div>
-          <div className="inv-colon">:</div>
-          <div className="inv-value">{date}</div>
+            <div className="inv-label">Invoice Date</div>
+            <div className="inv-colon">:</div>
+            <div className="inv-value">{date}</div>
 
-          <div className="inv-label">Invoice to</div>
-          <div className="inv-colon">:</div>
-          <div className="inv-value">
-            <strong>{guestName}</strong><br/>
-            {guestEmail}<br/>
-            {guestPhone}
+            {paymentId && (
+              <>
+                <div className="inv-label">Payment ID</div>
+                <div className="inv-colon">:</div>
+                <div className="inv-value" style={{ wordBreak: 'break-all', fontSize: '12px' }}>{paymentId}</div>
+              </>
+            )}
+
+            <div className="inv-label">Invoice To</div>
+            <div className="inv-colon">:</div>
+            <div className="inv-value">
+              <strong>{guestName}</strong><br/>
+              {guestEmail && <>{guestEmail}<br/></>}
+              {guestPhone}
+            </div>
+          </div>
+
+          <div className="inv-details-grid" style={{ display: 'grid', gridTemplateColumns: '100px 10px 1fr', rowGap: '6px' }}>
+            <div className="inv-label">Check-In</div>
+            <div className="inv-colon">:</div>
+            <div className="inv-value">{checkIn ? <><strong>{checkIn}</strong> (1:00 PM)</> : '—'}</div>
+
+            <div className="inv-label">Check-Out</div>
+            <div className="inv-colon">:</div>
+            <div className="inv-value">{checkOut ? <><strong>{checkOut}</strong> (11:00 AM)</> : '—'}</div>
+
+            <div className="inv-label">Duration</div>
+            <div className="inv-colon">:</div>
+            <div className="inv-value">{nights} {nights === 1 ? 'Night' : 'Nights'}</div>
+
+            <div className="inv-label">Occupancy</div>
+            <div className="inv-colon">:</div>
+            <div className="inv-value">
+              {totalRooms} {totalRooms === 1 ? 'Room' : 'Rooms'} · {adults || 1} Adult(s){children ? `, ${children} Child(ren)` : ''}
+            </div>
           </div>
         </div>
       </div>
@@ -90,18 +153,20 @@ export default function InvoiceReceipt({
             </tr>
           </thead>
           <tbody>
+            {displayItems.map((item, idx) => (
+              <tr key={idx}>
+                <td style={{ textAlign: 'left' }}>
+                  <strong>Braj Nidhi Guesthouse</strong><br/>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#111' }}>{item.name}</span>
+                  {item.subtitle && <div style={{ fontSize: '12px', color: '#666' }}>{item.subtitle}</div>}
+                </td>
+                <td style={{ textAlign: 'center' }}>₹{item.price.toLocaleString('en-IN')}</td>
+                <td style={{ textAlign: 'center' }}>{item.qty}</td>
+                <td style={{ textAlign: 'right' }}>₹{item.total.toLocaleString('en-IN')}</td>
+              </tr>
+            ))}
             <tr>
-              <td style={{ textAlign: 'left' }}>
-                Braj Nidhi Guesthouse<br/>
-                <span style={{ fontSize: '12px', color: '#666' }}>{roomTitle}</span>
-              </td>
-              <td style={{ textAlign: 'center' }}>₹{pricePerNight.toLocaleString()}</td>
-              <td style={{ textAlign: 'center' }}>{nights}</td>
-              <td style={{ textAlign: 'right' }}>₹{(pricePerNight * nights).toLocaleString()}</td>
-            </tr>
-            {/* Add extra row to make it look full if needed, or just keep it simple */}
-            <tr>
-              <td colSpan={4} style={{ borderBottom: 'none', height: '20px' }}></td>
+              <td colSpan={4} style={{ borderBottom: 'none', height: '16px' }}></td>
             </tr>
           </tbody>
         </table>
@@ -118,16 +183,16 @@ export default function InvoiceReceipt({
         </div>
         <div className="inv-totals">
           <div className="inv-total-row">
-            <span>Subtotal</span>
-            <span>₹{subtotal.toLocaleString()}</span>
+            <span>Subtotal (Taxable)</span>
+            <span>₹{subtotal.toLocaleString('en-IN')}</span>
           </div>
           <div className="inv-total-row">
-            <span>Tax (Included)</span>
-            <span>₹{tax.toLocaleString()}</span>
+            <span>GST (5% Included)</span>
+            <span>₹{tax.toLocaleString('en-IN')}</span>
           </div>
           <div className="inv-total-row inv-grand-total">
             <span>Grand Total</span>
-            <span>₹{grandTotal.toLocaleString()}</span>
+            <span>₹{grandTotal.toLocaleString('en-IN')}</span>
           </div>
         </div>
       </div>

@@ -12,7 +12,7 @@ import BookNowButton from "@/components/BookNowButton";
 const visitRows = [
   {
     label: "Location:",
-    value: "Braj Nidhi Dham, near Prem Mandir, Raman Reti, Vrindavan, Uttar Pradesh, PIN 281121",
+    value: "Braj Nidhi Guest House, Vrindavan Chandrodaya Mandir, Bhaktivedanata Swami Marg, Vrindavan, Uttar Pradesh, PIN CODE- 281121",
   },
   { label: "Open Daily:", value: "24/7 Front Desk · Check-in 12:00 PM" },
   { label: "Phone:", value: "+91 70377 94300" },
@@ -864,7 +864,7 @@ export default function Contact() {
                   </div>
                   <div className="location-item-content">
                     <h4>Address</h4>
-                    <p>Braj Nidhi Dham, near Prem Mandir, Raman Reti, Vrindavan, Uttar Pradesh, PIN 281121</p>
+                    <p>Braj Nidhi Guest House, Vrindavan Chandrodaya Mandir, Bhaktivedanata Swami Marg, Vrindavan, Uttar Pradesh, PIN CODE- 281121</p>
                   </div>
                 </div>
                 <div className="location-item">
@@ -946,7 +946,7 @@ export default function Contact() {
             <Link href="/booking">Book Your Stay</Link>
             <Link href="/weddings">Wedding Packages</Link>
             <Link href="/corporate">Corporate Stays</Link>
-            <a href="#">Refund Policy</a>
+            <Link href="/cancellation-policy">Refund Policy</Link>
           </motion.div>
           <div className="footer-col">
             <h3>Help & Support</h3>

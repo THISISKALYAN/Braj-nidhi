@@ -3586,15 +3586,44 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
                 <InvoiceReceipt 
                   bookingRef={bookingRef || 'BN-1234'}
                   date={new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  guestName={`${guestDetails.firstName || ''} ${guestDetails.lastName || ''}`}
+                  checkIn={checkIn ? new Date(checkIn).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : undefined}
+                  checkOut={checkOut ? new Date(checkOut).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : undefined}
+                  guestName={`${guestDetails.firstName || ''} ${guestDetails.lastName || ''}`.trim()}
                   guestEmail={guestDetails.email || ''}
                   guestPhone={guestDetails.phone || ''}
+                  roomsCount={rooms}
+                  adults={adults}
+                  children={children}
+                  paymentId={razorpayPaymentId || undefined}
                   roomTitle={getRoomTitle(roomType)}
                   pricePerNight={pricePerNight}
                   nights={nights}
-                  subtotal={payableTotal}
-                  tax={0}
+                  subtotal={taxableAmount}
+                  tax={gstAmount}
                   grandTotal={payableTotal}
+                  items={
+                    Object.entries(roomSelections).filter(([_, qty]) => qty > 0).length > 0
+                      ? Object.entries(roomSelections).filter(([_, qty]) => qty > 0).map(([rt, qty]) => {
+                          const normKey = normalizeRoomKey(rt);
+                          const roomPrice = livePrices[normKey] || livePrices[rt] || getRoomPrice(normKey);
+                          return {
+                            name: getRoomTitle(rt),
+                            subtitle: `${qty} Room${qty > 1 ? 's' : ''} × ${nights} Night${nights > 1 ? 's' : ''}`,
+                            price: roomPrice,
+                            qty: qty * nights,
+                            total: roomPrice * nights * qty
+                          };
+                        })
+                      : [
+                          {
+                            name: getRoomTitle(roomType),
+                            subtitle: `${rooms} Room${rooms > 1 ? 's' : ''} × ${nights} Night${nights > 1 ? 's' : ''}`,
+                            price: pricePerNight,
+                            qty: rooms * nights,
+                            total: pricePerNight * nights * rooms
+                          }
+                        ]
+                  }
                 />
 
                 <div className="conf-bottom-actions">
@@ -3767,7 +3796,7 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
         <div className="footer-top-links">
           <div className="footer-col"><h3>Our Services</h3><Link href="/guesthouse">Guesthouse</Link><Link href="/weddings">Weddings</Link><Link href="/corporate">Corporate</Link><Link href="/braj-yatra">Braj Yatra</Link></div>
           <div className="footer-col"><h3>Explore Vrindavan</h3><Link href="/braj-yatra#packages">Sapt Devalaya Yatra</Link><Link href="/braj-yatra#packages">Chaurasi Kos Yatra</Link><Link href="/braj-yatra">Govardhan Parikrama</Link><Link href="/braj-yatra">Barsana & Nandgaon</Link><a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer">Chandrodaya Mandir</a><a href="https://www.vhtofficial.com/" target="_blank" rel="noopener noreferrer">Heritage Tower</a></div>
-          <div className="footer-col"><h3>Stay & Book</h3><Link href="/booking">Book Your Stay</Link><Link href="/weddings">Wedding Packages</Link><Link href="/corporate">Corporate Stays</Link><a href="#">Refund Policy</a></div>
+          <div className="footer-col"><h3>Stay & Book</h3><Link href="/booking">Book Your Stay</Link><Link href="/weddings">Wedding Packages</Link><Link href="/corporate">Corporate Stays</Link><Link href="/cancellation-policy">Refund Policy</Link></div>
           <div className="footer-col"><h3>Help & Support</h3><a href="#">FAQ</a><Link href="/contact">Contact Us</Link><a href="#">Direction Map</a><a href="#">Group Inquiries</a></div>
           <div className="footer-col"><h3>Information</h3><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link><Link href="/guest-policy">Guest Policy</Link><Link href="/cancellation-policy">Cancellation Policy</Link></div>
                         <div className="footer-col">

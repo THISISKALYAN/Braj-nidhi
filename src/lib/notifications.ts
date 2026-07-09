@@ -147,7 +147,7 @@ function buildEmailHTML(p: BookingNotificationPayload): string {
             <div style="background:#fff8e7;border:1px solid rgba(200,155,60,0.25);border-radius:12px;padding:16px 18px;">
               <div style="font-size:12px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Property</div>
               <div style="font-size:15px;font-weight:800;color:#111;margin-bottom:4px;">Braj Nidhi Guesthouse</div>
-              <div style="font-size:13px;color:#6b7280;">📍 Raman Reti Road, Vrindavan, Mathura, UP – 281121</div>
+              <div style="font-size:13px;color:#6b7280;">📍 Braj Nidhi Guest House, Vrindavan Chandrodaya Mandir, Bhaktivedanata Swami Marg, Vrindavan, UP – 281121</div>
               <div style="font-size:13px;color:#6b7280;margin-top:4px;">📞 +91 97600 00000</div>
             </div>
           </td>
@@ -203,7 +203,7 @@ Total Paid: ₹${p.total.toLocaleString('en-IN')} (incl. GST)
 PROPERTY
 ────────
 Braj Nidhi Guesthouse
-Raman Reti Road, Vrindavan, UP – 281121
+Vrindavan Chandrodaya Mandir, Bhaktivedanata Swami Marg, Vrindavan, UP – 281121
 
 • Check-in from 12:00 PM, Check-out by 11:00 AM
 • Carry a valid government ID at check-in
@@ -227,7 +227,7 @@ function buildWhatsAppMessage(p: BookingNotificationPayload): string {
 🌙 *Nights:* ${p.nights}  |  🛏️ *Rooms:* ${p.rooms}  |  👥 *Guests:* ${p.adults + p.children}
 💰 *Total Paid:* ₹${p.total.toLocaleString('en-IN')}
 
-📍 Raman Reti Road, Vrindavan
+📍 Vrindavan Chandrodaya Mandir, Bhaktivedanata Swami Marg, Vrindavan – 281121
 
 ℹ️ Carry valid ID at check-in · No alcohol · No non-veg
 

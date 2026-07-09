@@ -2097,6 +2097,8 @@ header.scrolled nav ul li a:hover {
 }
 
 .footer-top-links {
+    position: relative;
+    z-index: 20;
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 30px;
@@ -2126,6 +2128,8 @@ header.scrolled nav ul li a:hover {
 }
 
 .footer-middle-bar {
+    position: relative;
+    z-index: 20;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -2141,6 +2145,7 @@ header.scrolled nav ul li a:hover {
 }
 
 .footer-massive-text {
+    pointer-events: none;
     font-size: 14.5vw;
     font-weight: 900;
     line-height: 0.75;

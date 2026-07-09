@@ -1365,7 +1365,7 @@ export default function Weddings() {
                 <a href="/#contact">Book Your Stay</a>
                 <a href="/weddings">Wedding Packages</a>
                 <a href="/corporate">Corporate Stays</a>
-                <a href="#">Refund Policy</a>
+                <Link href="/cancellation-policy">Refund Policy</Link>
             </div>
             <div className="footer-col">
                 <h3>Help & Support</h3>

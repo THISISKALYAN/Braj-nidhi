@@ -546,7 +546,7 @@ export default function PrivacyPage() {
             <Link href="/booking">Book Your Stay</Link>
             <Link href="/weddings">Wedding Packages</Link>
             <Link href="/corporate">Corporate Stays</Link>
-            <a href="#">Refund Policy</a>
+            <Link href="/cancellation-policy">Refund Policy</Link>
           </div>
           <div className="footer-col">
             <h3>Help & Support</h3>

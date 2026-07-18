@@ -79,7 +79,7 @@ export default function PremiumDoubleCalendar({
     const handle = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         const t = e.target as Element;
-        if (t.closest('.mmt-date-trigger') || t.closest('.search-block')) return;
+        if (t.closest('.mmt-date-trigger') || t.closest('.search-block') || t.closest('.rbm-row')) return;
         if (onClose) onClose();
       }
     };

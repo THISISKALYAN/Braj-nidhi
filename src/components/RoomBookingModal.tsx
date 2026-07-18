@@ -59,8 +59,8 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
   const todayDate = new Date(); todayDate.setHours(0,0,0,0);
   const tomorrowDate = addDays(todayDate, 1);
 
-  const [checkIn, setCheckIn] = useState(fmt(todayDate));
-  const [checkOut, setCheckOut] = useState(fmt(tomorrowDate));
+  const [checkIn, setCheckIn] = useState('');
+  const [checkOut, setCheckOut] = useState('');
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [calendarInitialSelection, setCalendarInitialSelection] = useState<'in'|'out'>('in');
 
@@ -90,10 +90,8 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
   // Reset on open
   useEffect(() => {
     if (isOpen) {
-      const t = new Date(); t.setHours(0,0,0,0);
-      const tm = addDays(t, 1);
-      setCheckIn(fmt(t));
-      setCheckOut(fmt(tm));
+      setCheckIn('');
+      setCheckOut('');
       setRooms(1); setAdults(2); setChildren(0);
       setIsCalendarOpen(false); setShowGuests(false);
       setBooking('idle'); setBookingError('');
@@ -442,7 +440,7 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
           >
             <div>
               <div className="rbm-row-label">Check-in</div>
-              <div className="rbm-row-value">{fmtDisplay(checkIn)}</div>
+              <div className="rbm-row-value">{checkIn ? fmtDisplay(checkIn) : 'Select Check-in Date'}</div>
             </div>
             <span className="rbm-badge" style={{ background: isCalendarOpen && calendarInitialSelection==='in' ? accentColor : '#f3f4f6', color: isCalendarOpen && calendarInitialSelection==='in' ? '#fff' : '#9ca3af' }}>
               {isCalendarOpen && calendarInitialSelection==='in' ? 'Selecting' : 'Tap to change'}
@@ -465,7 +463,7 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
           >
             <div>
               <div className="rbm-row-label">Check-out</div>
-              <div className="rbm-row-value">{fmtDisplay(checkOut)}</div>
+              <div className="rbm-row-value">{checkOut ? fmtDisplay(checkOut) : 'Select Check-out Date'}</div>
             </div>
             <span className="rbm-badge" style={{ background: isCalendarOpen && calendarInitialSelection==='out' ? accentColor : '#f3f4f6', color: isCalendarOpen && calendarInitialSelection==='out' ? '#fff' : '#9ca3af' }}>
               {isCalendarOpen && calendarInitialSelection==='out' ? 'Selecting' : 'Tap to change'}
@@ -612,8 +610,32 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
           )}
         </div>
 
+        {/* Prompt when dates not selected yet */}
+        {(!checkIn || !checkOut) && (
+          <div style={{
+            margin: '16px 20px 0',
+            padding: '14px 18px',
+            background: '#f8f9fa',
+            border: '1px solid #e5e7eb',
+            borderRadius: 12,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}>
+            <span style={{ fontSize: 20 }}>📅</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+                Select Dates & Guests
+              </div>
+              <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+                Please choose your check-in & check-out dates above to view real-time room availability.
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Room Availability */}
-        {!avail.loading && !isBlocked && nights > 0 && (
+        {checkIn && checkOut && !avail.loading && !isBlocked && nights > 0 && (
           <div style={{
             margin: '16px 20px 0',
             padding: '14px 18px',
@@ -649,7 +671,7 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
           </div>
         )}
 
-        {avail.loading && (
+        {checkIn && checkOut && avail.loading && (
           <div style={{ margin: '16px 20px 0', padding: '14px 18px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 12, fontSize: 13, color: '#6b7280', display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ display: 'inline-block', width: 12, height: 12, border: '2px solid #d1d5db', borderTopColor: '#6b7280', borderRadius: '50%', animation: 'rbmSpin 0.7s linear infinite' }}/>
             <style>{`@keyframes rbmSpin { to { transform: rotate(360deg); } }`}</style>
@@ -677,18 +699,18 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
             </div>
           )}
           <button
-            onClick={handleProceed}
-            disabled={isBlocked || booking === 'loading'}
+            onClick={(!checkIn || !checkOut) ? () => { setCalendarInitialSelection('in'); setIsCalendarOpen(true); } : handleProceed}
+            disabled={(!checkIn || !checkOut) ? false : (isBlocked || booking === 'loading')}
             style={{
               width: '100%',
-              background: isBlocked ? '#d1d5db' : accentColor,
-              color: isBlocked ? '#9ca3af' : '#fff',
+              background: (!checkIn || !checkOut || isBlocked) ? '#d1d5db' : accentColor,
+              color: (!checkIn || !checkOut || isBlocked) ? '#374151' : '#fff',
               border: 'none',
               borderRadius: '50px',
               padding: '16px 28px',
               fontSize: 17,
               fontWeight: 800,
-              cursor: isBlocked ? 'not-allowed' : 'pointer',
+              cursor: (!checkIn || !checkOut) ? 'pointer' : (isBlocked ? 'not-allowed' : 'pointer'),
               fontFamily: 'inherit',
               letterSpacing: '0.5px',
               transition: 'opacity 0.15s',
@@ -697,11 +719,13 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
               justifyContent: 'center',
               gap: 8,
             }}
-            onMouseOver={e => { if (!isBlocked) e.currentTarget.style.opacity='0.9'; }}
+            onMouseOver={e => { if (checkIn && checkOut && !isBlocked) e.currentTarget.style.opacity='0.9'; }}
             onMouseOut={e => { e.currentTarget.style.opacity='1'; }}
           >
             {booking === 'loading' ? (
               'Confirming...'
+            ) : (!checkIn || !checkOut) ? (
+              'Select Dates to Check Availability'
             ) : isBlocked ? (
               'Dates Unavailable'
             ) : (

@@ -113,21 +113,21 @@ export default function PremiumDoubleCalendar({
 
     if (activeSelection === 'in') {
       const minOut = addDays(day, 1);
-      const newOutDate = day >= checkOutDate ? minOut : checkOutDate;
-      const newOut = fmtStr(newOutDate);
+      const newOut = (checkOut && checkOutDate > day) ? checkOut : '';
       onChange(fmtStr(day), newOut);
       setActiveSelection('out');
-      setViewMonth(newOutDate.getMonth());
-      setViewYear(newOutDate.getFullYear());
+      const targetMonthDate = newOut ? parseDateStr(newOut) : minOut;
+      setViewMonth(targetMonthDate.getMonth());
+      setViewYear(targetMonthDate.getFullYear());
     } else {
-      if (day <= checkInDate) {
+      if (day <= checkInDate && checkIn) {
         const minOut = addDays(day, 1);
         onChange(fmtStr(day), fmtStr(minOut));
         setActiveSelection('out');
         setViewMonth(minOut.getMonth());
         setViewYear(minOut.getFullYear());
       } else {
-        onChange(checkIn, fmtStr(day));
+        onChange(checkIn || fmtStr(addDays(day, -1)), fmtStr(day));
         if (onClose) onClose();
       }
     }

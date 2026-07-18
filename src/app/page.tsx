@@ -156,7 +156,7 @@ export default function Home() {
   };
 
   const formatDateFriendly = (dateStr: string) => {
-    if (!dateStr) return '';
+    if (!dateStr) return 'Select Date';
     try {
       const [y, m, d] = dateStr.split('-').map(Number);
       const dateObj = new Date(y, m - 1, d);
@@ -212,8 +212,8 @@ export default function Home() {
   };
 
   const [bookingData, setBookingData] = useState({
-    checkIn: '2026-05-18',
-    checkOut: '2026-05-20',
+    checkIn: '',
+    checkOut: '',
     guests: '1 Room, 2 Guests',
     roomCounts: {
       deluxe2: 1,

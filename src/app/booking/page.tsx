@@ -375,8 +375,11 @@ export default function BookingPage() {
         return `${y}-${m}-${day}`;
       };
 
-      setCheckIn(parsedCheckIn || formatDate(today));
-      setCheckOut(parsedCheckOut || formatDate(tomorrow));
+      setCheckIn(parsedCheckIn || '');
+      setCheckOut(parsedCheckOut || '');
+      if (!parsedCheckIn || !parsedCheckOut) {
+        setShowModify(true);
+      }
 
       // 4. Guests
       const paramAdults = params.get('adults');
@@ -488,6 +491,7 @@ export default function BookingPage() {
   };
 
   const isCategoryAvailable = (type: 'deluxe2' | 'deluxe3' | 'deluxe4'): boolean => {
+    if (!checkIn || !checkOut || checkIn >= checkOut) return true;
     if (apiConnectionStatus !== 'live') return true;
     if (availableRoomsList.length === 0) return false;
     return availableRoomsList.some((room: any) => erpToWebsiteType(room.roomTypeId) === type);
@@ -495,9 +499,12 @@ export default function BookingPage() {
 
   // Trigger API search rooms when inputs change + poll every 20s
   useEffect(() => {
+    if (!checkIn || !checkOut || checkIn >= checkOut) return;
     searchRoomsApi(checkIn, checkOut, adults + children);
     const id = setInterval(() => {
-      searchRoomsApi(checkIn, checkOut, adults + children);
+      if (checkIn && checkOut && checkIn < checkOut) {
+        searchRoomsApi(checkIn, checkOut, adults + children);
+      }
     }, 20_000);
     return () => clearInterval(id);
   }, [checkIn, checkOut, adults, children]);
@@ -2634,9 +2641,9 @@ export default function BookingPage() {
                   <div style={{ paddingRight: '16px', borderRight: '1px solid #e5e7eb' }}>
                     <div style={{ fontSize: '10px', fontWeight: '700', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '4px' }}>CHECK IN</div>
                     <div style={{ fontSize: '14px', fontWeight: '800', color: '#111', lineHeight: 1.3 }}>
-                      {new Date(checkIn).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
+                      {checkIn ? new Date(checkIn).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) : 'Select Check-in Date'}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '3px' }}>{checkInTime}</div>
+                    <div style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '3px' }}>{checkIn ? checkInTime : '—'}</div>
                   </div>
 
                   <div className="bk-nights-bubble" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 18px' }}>
@@ -2649,9 +2656,9 @@ export default function BookingPage() {
                   <div style={{ padding: '0 16px', borderRight: '1px solid #e5e7eb' }}>
                     <div style={{ fontSize: '10px', fontWeight: '700', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '4px' }}>CHECK OUT</div>
                     <div style={{ fontSize: '14px', fontWeight: '800', color: '#111', lineHeight: 1.3 }}>
-                      {new Date(checkOut).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
+                      {checkOut ? new Date(checkOut).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) : 'Select Check-out Date'}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '3px' }}>{checkOutTime}</div>
+                    <div style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '3px' }}>{checkOut ? checkOutTime : '—'}</div>
                   </div>
 
                   <div style={{ paddingLeft: '16px' }}>
@@ -2830,7 +2837,8 @@ export default function BookingPage() {
                       <span className={`status-dot ${apiConnectionStatus}`} />
                     )}
                     <span style={{ fontSize: '13px', fontWeight: '600', color: '#000000' }}>
-                      {isSearching ? 'Syncing live inventory from ERP...' : 
+                      {!checkIn || !checkOut ? 'Please select Check-in / Check-out dates and Guests to check availability' :
+                       isSearching ? 'Syncing live inventory from ERP...' : 
                        apiConnectionStatus === 'live' ? 'Live ERP Connected' : 
                        apiConnectionStatus === 'error' ? 'ERP Sync Interrupted (Sandbox active)' : 
                        'Sandbox Simulator Active'}
@@ -2840,7 +2848,7 @@ export default function BookingPage() {
                     <button 
                       onClick={() => searchRoomsApi(checkIn, checkOut, adults + children)}
                       className="btn-apply-promo"
-                      disabled={isSearching}
+                      disabled={isSearching || !checkIn || !checkOut}
                       style={{ padding: '6px 12px', fontSize: '12px', margin: 0 }}
                     >
                       Search / Sync Rooms
@@ -3098,11 +3106,16 @@ export default function BookingPage() {
                     Please check this box to agree to the policies and proceed
                   </div>
                 )}
+                {(!checkIn || !checkOut) && (
+                  <div style={{ color: '#ef4444', fontSize: '12px', marginBottom: '16px', fontWeight: '500', paddingLeft: '25px' }}>
+                    Please select check-in and check-out dates above to proceed
+                  </div>
+                )}
                 {(() => {
                   const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(guestDetails.email || '');
                   const isPhoneValid = /^(?:\+91|91)?[6789]\d{9}$/.test((guestDetails.phone || '').replace(/[\s-]/g, ''));
                   const isFormValid = (guestDetails.firstName || '').trim() && (guestDetails.lastName || '').trim() && isEmailValid && isPhoneValid;
-                  const isDisabled = isInsufficient || availChecking || !isFormValid || !termsAccepted;
+                  const isDisabled = isInsufficient || availChecking || !isFormValid || !termsAccepted || !checkIn || !checkOut;
 
                   return (
                     <button

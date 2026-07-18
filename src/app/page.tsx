@@ -812,11 +812,18 @@ Event: ${bookingData.eventType}`);
                     {/* Search Button block */}
                     <div className="search-action-block" style={{ paddingLeft: '8px', borderLeft: '1px solid rgba(0, 0, 0, 0.08)' }}>
                         <Link
-                          href={`/rooms-combo?checkin=${bookingData.checkIn}&checkout=${bookingData.checkOut}&rooms=${
+                          href={(!bookingData.checkIn || !bookingData.checkOut) ? '#' : `/rooms-combo?checkin=${bookingData.checkIn}&checkout=${bookingData.checkOut}&rooms=${
                             bookingData.roomCounts.deluxe2 + bookingData.roomCounts.deluxe3 + bookingData.roomCounts.deluxe4
                           }&adults=${
                             (bookingData.roomCounts.deluxe2 * 2) + (bookingData.roomCounts.deluxe3 * 3) + (bookingData.roomCounts.deluxe4 * 4)
                           }&children=0&guests=${encodeURIComponent(bookingData.guests)}&deluxe2=${bookingData.roomCounts.deluxe2}&deluxe3=${bookingData.roomCounts.deluxe3}&deluxe4=${bookingData.roomCounts.deluxe4}`}
+                          onClick={(e) => {
+                            if (!bookingData.checkIn || !bookingData.checkOut) {
+                              e.preventDefault();
+                              setCalendarInitialSelection('in');
+                              setIsCalendarOpen(true);
+                            }
+                          }}
                           className="search-circle-button"
                           aria-label="Search Suites"
                         >

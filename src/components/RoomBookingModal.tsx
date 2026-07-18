@@ -93,7 +93,7 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
       setCheckIn('');
       setCheckOut('');
       setRooms(1); setAdults(2); setChildren(0);
-      setIsCalendarOpen(false); setShowGuests(false);
+      setIsCalendarOpen(true); setCalendarInitialSelection('in'); setShowGuests(false);
       setBooking('idle'); setBookingError('');
       setSoldOutPopup(false);
       lastBlockedDates.current = '';

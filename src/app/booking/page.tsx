@@ -165,8 +165,15 @@ export default function BookingPage() {
   const [soldOutPopup, setSoldOutPopup] = useState<boolean>(false);
   const lastAvailKey = useRef<string>('');
 
+  // Availability is never queried until the guest has supplied every input the ERP
+  // needs. Without this, the page would ask about a stay nobody selected and show
+  // results unrelated to the guest's actual criteria.
+  const guestCount = adults + children;
+  const hasRequiredBookingInputs =
+    Boolean(checkIn) && Boolean(checkOut) && checkIn < checkOut && adults >= 1;
+
   useEffect(() => {
-    if (!checkIn || !checkOut || checkIn >= checkOut) return;
+    if (!hasRequiredBookingInputs) return;
     const selectionsStr = JSON.stringify(roomSelections);
     const key = `${selectionsStr}|${checkIn}|${checkOut}`;
     if (lastAvailKey.current === key) return;
@@ -215,7 +222,7 @@ export default function BookingPage() {
       });
       
     return () => { ignore = true; };
-  }, [roomSelections, roomType, checkIn, checkOut]);
+  }, [roomSelections, roomType, checkIn, checkOut, hasRequiredBookingInputs]);
 
   const insufficientRoomKey = Object.keys(roomSelections).find(rt => {
     const qty = roomSelections[rt] || 0;
@@ -416,7 +423,10 @@ export default function BookingPage() {
 
     };
 
-    window.requestAnimationFrame(initializeFromQuery);
+    // Called directly rather than via requestAnimationFrame: rAF callbacks never
+    // fire while the tab is backgrounded, which silently dropped the guest's
+    // selected dates when the booking link was opened in a new/background tab.
+    initializeFromQuery();
   }, []);
 
   // Sync scroll class for transparent/solid header
@@ -469,11 +479,24 @@ export default function BookingPage() {
       if (data.availableRooms && Array.isArray(data.availableRooms)) {
         setAvailableRoomsList(data.availableRooms);
 
-        // Website displays canonical per-night rates (deluxe2: 3500, deluxe3: 4500, deluxe4: 5500).
-        // ERP returns its own per-stay/tax-adjusted amounts which differ from the website rate card,
-        // so we intentionally do NOT overwrite livePrices here — that caused the displayed
-        // ₹3,500/night to be silently replaced by an ERP figure (e.g. 6666.66) on the fare summary.
+        // ERP is the source of truth for daily room rates. Map each returned room
+        // to its website room-type key and use its pricePerNight, falling back to
+        // the static rate card only when the ERP doesn't return a price for a type.
+        const erpPrices = data.availableRooms.reduce(
+          (acc: Record<string, number>, room: any) => {
+            const type = erpToWebsiteType(room.roomTypeId);
+            const price = Number(room.pricePerNight || 0);
 
+            if (type && price > 0) {
+              acc[type] = price;
+            }
+
+            return acc;
+          },
+          {}
+        );
+
+        setLivePrices(prev => ({ ...prev, ...erpPrices }));
       }
     } catch (err: any) {
       console.warn('ERP searchRoomsApi error:', err.message || err);
@@ -491,23 +514,23 @@ export default function BookingPage() {
   };
 
   const isCategoryAvailable = (type: 'deluxe2' | 'deluxe3' | 'deluxe4'): boolean => {
-    if (!checkIn || !checkOut || checkIn >= checkOut) return true;
+    // Nothing has been asked of the ERP yet, so no category can be called sold out.
+    if (!hasRequiredBookingInputs) return true;
     if (apiConnectionStatus !== 'live') return true;
     if (availableRoomsList.length === 0) return false;
     return availableRoomsList.some((room: any) => erpToWebsiteType(room.roomTypeId) === type);
   };
 
-  // Trigger API search rooms when inputs change + poll every 20s
+  // Trigger API search rooms once the guest's dates + guest count are known, then
+  // poll every 20s. Nothing is requested — and no poll is scheduled — until then.
   useEffect(() => {
-    if (!checkIn || !checkOut || checkIn >= checkOut) return;
-    searchRoomsApi(checkIn, checkOut, adults + children);
+    if (!hasRequiredBookingInputs) return;
+    searchRoomsApi(checkIn, checkOut, guestCount);
     const id = setInterval(() => {
-      if (checkIn && checkOut && checkIn < checkOut) {
-        searchRoomsApi(checkIn, checkOut, adults + children);
-      }
+      searchRoomsApi(checkIn, checkOut, guestCount);
     }, 20_000);
     return () => clearInterval(id);
-  }, [checkIn, checkOut, adults, children]);
+  }, [checkIn, checkOut, guestCount, hasRequiredBookingInputs]);
 
 
   const handleRequestBadgeToggle = (badge: string) => {
@@ -3106,16 +3129,16 @@ export default function BookingPage() {
                     Please check this box to agree to the policies and proceed
                   </div>
                 )}
-                {(!checkIn || !checkOut) && (
+                {!hasRequiredBookingInputs && (
                   <div style={{ color: '#ef4444', fontSize: '12px', marginBottom: '16px', fontWeight: '500', paddingLeft: '25px' }}>
-                    Please select check-in and check-out dates above to proceed
+                    Please select your check-in date, check-out date, and number of guests to check room availability.
                   </div>
                 )}
                 {(() => {
                   const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(guestDetails.email || '');
                   const isPhoneValid = /^(?:\+91|91)?[6789]\d{9}$/.test((guestDetails.phone || '').replace(/[\s-]/g, ''));
                   const isFormValid = (guestDetails.firstName || '').trim() && (guestDetails.lastName || '').trim() && isEmailValid && isPhoneValid;
-                  const isDisabled = isInsufficient || availChecking || !isFormValid || !termsAccepted || !checkIn || !checkOut;
+                  const isDisabled = isInsufficient || availChecking || !isFormValid || !termsAccepted || !hasRequiredBookingInputs;
 
                   return (
                     <button

@@ -195,11 +195,19 @@ function RoomsComboContent() {
     }
   }, [checkIn, checkOut, roomsCount]);
 
+  const hasRequiredBookingInputs = Boolean(checkIn) && Boolean(checkOut) && checkIn < checkOut && adults >= 1;
+
   useEffect(() => {
+    // No dates/guests yet means there is nothing meaningful to ask the ERP, so
+    // neither the initial fetch nor the 20s refresh poll is started.
+    if (!hasRequiredBookingInputs) {
+      setAvailLoading(false);
+      return;
+    }
     fetchAvailability(true);
     const id = setInterval(() => fetchAvailability(false), 20_000);
     return () => clearInterval(id);
-  }, [fetchAvailability]);
+  }, [fetchAvailability, hasRequiredBookingInputs]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -507,6 +515,21 @@ function RoomsComboContent() {
 
         {/* ─── Left column ─── */}
         <div>
+
+          {!hasRequiredBookingInputs && (
+            <div style={{
+              background: '#fef3c7',
+              border: '1px solid rgba(200,155,60,.4)',
+              borderRadius: '10px',
+              padding: '14px 16px',
+              marginBottom: '16px',
+              fontSize: '13.5px',
+              fontWeight: 600,
+              color: '#92400e',
+            }}>
+              Please select your check-in date, check-out date, and number of guests to check room availability.
+            </div>
+          )}
 
           {/* Rooms section */}
           <div className="rcp-rooms-label">Available Rooms & Suites — Select to Continue</div>

@@ -295,20 +295,9 @@ export default function Home() {
     };
     window.addEventListener('scroll', handleScroll);
 
-    // Dynamic date sync with current date
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 2);
-
-    const formatDate = (d: Date) => {
-      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(d);
-    };
-
-    setBookingData(prev => ({
-      ...prev,
-      checkIn: formatDate(today),
-      checkOut: formatDate(tomorrow)
-    }));
+    // Check-in / check-out are intentionally left empty until the guest picks them.
+    // Pre-filling today + 2 made the search button navigate straight through with
+    // dates nobody chose, so availability was checked against assumed criteria.
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);

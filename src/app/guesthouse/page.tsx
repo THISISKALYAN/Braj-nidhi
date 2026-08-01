@@ -9,6 +9,7 @@ import { Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import FloatingWidgets from '@/components/FloatingWidgets';
 import BookNowButton from '@/components/BookNowButton';
 import RoomBookingModal from '@/components/RoomBookingModal';
+import { useLivePrices } from '@/hooks/useLivePrices';
 
 // Self-contained Room Card Slideshow to isolate slide re-renders
 const RoomCardSlideshow = ({ images, alt, interval = 4000 }: { images: string[]; alt: string; interval?: number }) => {
@@ -57,8 +58,13 @@ export default function Guesthouse() {
   const [roomModal, setRoomModal] = useState<{ open: boolean; roomType: 'deluxe2'|'deluxe3'|'deluxe4'; roomName: string; price: number }>({
     open: false, roomType: 'deluxe2', roomName: '', price: 0
   });
-  const openRoomModal = (roomType: 'deluxe2'|'deluxe3'|'deluxe4', roomName: string, price: number) => {
-    setRoomModal({ open: true, roomType, roomName, price });
+  // Nightly rates from the ERP (today's rate here, since this page has no date
+  // picker). Room cards read these instead of hardcoded numbers.
+  const { prices: livePrices } = useLivePrices(undefined, undefined, { pollMs: 60_000 });
+
+  /** Price is taken from livePrices by type, so callers can't pass a stale figure. */
+  const openRoomModal = (roomType: 'deluxe2'|'deluxe3'|'deluxe4', roomName: string) => {
+    setRoomModal({ open: true, roomType, roomName, price: livePrices[roomType] });
   };
 
   useEffect(() => {
@@ -1784,7 +1790,7 @@ export default function Guesthouse() {
                                     <span><i className="fas fa-concierge-bell"></i> 24/7 Room Service</span>
                                     <span><i className="fas fa-pump-soap"></i> Premium Grooming Kit</span>
                                 </div>
-                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe2', 'Deluxe 2 – Twin Bedded Room', 3500)}>Book for ₹3,500 <i className="fas fa-chevron-right"></i></button>
+                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe2', 'Deluxe 2 – Twin Bedded Room')}>Book for ₹{livePrices.deluxe2.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                             </div>
                         </div>
 
@@ -1801,7 +1807,7 @@ export default function Guesthouse() {
                                     <span><i className="fas fa-pump-soap"></i> Premium Grooming Kit</span>
                                     <span><i className="fas fa-place-of-worship"></i> Temple Access</span>
                                 </div>
-                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe3', 'Deluxe 3 – 3 Bedded Room', 4500)}>Book for ₹4,500 <i className="fas fa-chevron-right"></i></button>
+                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe3', 'Deluxe 3 – 3 Bedded Room')}>Book for ₹{livePrices.deluxe3.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                             </div>
                         </div>
 
@@ -1819,7 +1825,7 @@ export default function Guesthouse() {
                                     <span><i className="fas fa-place-of-worship"></i> Temple Access</span>
                                     <span><i className="fas fa-tree"></i> Vrindavan Chandrodaya Mandir Park Access</span>
                                 </div>
-                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe4', 'Deluxe 4 – 4 Bedded Room', 5500)}>Book for ₹5,500 <i className="fas fa-chevron-right"></i></button>
+                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe4', 'Deluxe 4 – 4 Bedded Room')}>Book for ₹{livePrices.deluxe4.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                             </div>
                         </div>
                     </div>

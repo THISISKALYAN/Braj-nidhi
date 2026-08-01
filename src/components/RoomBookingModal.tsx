@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import PremiumDoubleCalendar from './PremiumDoubleCalendar';
 import RoomUnavailablePopup from './RoomUnavailablePopup';
+import { useLivePrices } from '@/hooks/useLivePrices';
 
 interface RoomBookingModalProps {
   isOpen: boolean;
@@ -68,6 +69,18 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [showGuests, setShowGuests] = useState(false);
+
+  /**
+   * Re-price for the dates chosen inside this modal. The `price` prop is only
+   * the rate for the day the modal was opened; ERP rates vary by date, so once
+   * the guest picks a stay we look up that stay's rate instead.
+   */
+  const { prices: livePrices, isLoading: pricesLoading } = useLivePrices(
+    checkIn,
+    checkOut,
+    { guests: adults + children },
+  );
+  const effectivePrice = livePrices[roomType] ?? price;
 
   // ERP availability state
   const [avail, setAvail] = useState<AvailabilityState>({
@@ -408,7 +421,7 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
             </div>
             <div style={{ fontSize: 22, fontWeight: 800, color: '#111', lineHeight: 1.2 }}>{roomName}</div>
             <div style={{ fontSize: 16, color: accentColor, fontWeight: 700, marginTop: 6 }}>
-              ₹{price.toLocaleString()} <span style={{ fontSize: 13, color: '#9ca3af', fontWeight: 400 }}>per night</span>
+              ₹{effectivePrice.toLocaleString()} <span style={{ fontSize: 13, color: '#9ca3af', fontWeight: 400 }}>per night</span>
             </div>
           </div>
           <button
@@ -593,7 +606,7 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
                     {rooms} Room{rooms>1?'s':''} × {nights} night{nights>1?'s':''}
                   </span>
                   <span style={{ fontSize: 16, fontWeight: 800, color: accentColor }}>
-                    ₹{(price * nights * rooms).toLocaleString()}
+                    ₹{(effectivePrice * nights * rooms).toLocaleString()}
                   </span>
                 </div>
               )}
@@ -694,7 +707,7 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
               {' · '}
               <strong style={{ color: '#111' }}>{nights} night{nights!==1?'s':''}</strong>
               {' · '}
-              <strong style={{ color: accentColor, fontSize: 15 }}>₹{(price * nights * rooms).toLocaleString()}</strong>
+              <strong style={{ color: accentColor, fontSize: 15 }}>₹{(effectivePrice * nights * rooms).toLocaleString()}</strong>
               <span style={{ color: '#9ca3af' }}> total est.</span>
             </div>
           )}

@@ -2,6 +2,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import {
+  FALLBACK_PRICES,
+  extractErpPrices,
+  normalizeRoomKey as normalizeRoomKeyShared,
+} from '@/lib/roomPricing';
+
+/** Set NEXT_PUBLIC_DEBUG_PRICES=1 to trace ERP pricing in the browser console. */
+const DEBUG_PRICES = process.env.NEXT_PUBLIC_DEBUG_PRICES === '1';
 import { 
   Calendar, 
   Users, 
@@ -246,22 +254,12 @@ export default function BookingPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const requestBadges = ["Late Check-out (2 hrs)", "Spiritual Literature in Room", "Quiet Room", "Extra Bedding", "Temple Prasadam Delivery"];
 
-  const normalizeRoomKey = (raw: string): 'deluxe2' | 'deluxe3' | 'deluxe4' => {
-    const s = (raw || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (s.includes('royal') || s.includes('deluxe4') || s.includes('family') || s.includes('quad') || s.endsWith('4')) return 'deluxe4';
-    if (s.includes('deluxe3') || s.includes('triple') || s.endsWith('3')) return 'deluxe3';
-    return 'deluxe2';
-  };
+  // Mapping and the fallback rate card come from src/lib/roomPricing.ts so this
+  // page can't drift from the rest of the site.
+  const normalizeRoomKey = normalizeRoomKeyShared;
 
-  const getRoomPrice = (type: string): number => {
-    switch (normalizeRoomKey(type)) {
-      case 'deluxe3': return 4500;
-      case 'deluxe4': return 5500;
-      case 'deluxe2':
-      default:
-        return 3500;
-    }
-  };
+  /** Rate-card price. Only reached when the ERP priced nothing for the type. */
+  const getRoomPrice = (type: string): number => FALLBACK_PRICES[normalizeRoomKey(type)];
 
   const getRoomTitle = (type: string): string => {
     switch (normalizeRoomKey(type)) {
@@ -475,28 +473,37 @@ export default function BookingPage() {
 
       const data = await response.json();
       setApiConnectionStatus('live');
-      
+
       if (data.availableRooms && Array.isArray(data.availableRooms)) {
         setAvailableRoomsList(data.availableRooms);
 
-        // ERP is the source of truth for daily room rates. Map each returned room
-        // to its website room-type key and use its pricePerNight, falling back to
-        // the static rate card only when the ERP doesn't return a price for a type.
-        const erpPrices = data.availableRooms.reduce(
-          (acc: Record<string, number>, room: any) => {
-            const type = erpToWebsiteType(room.roomTypeId);
-            const price = Number(room.pricePerNight || 0);
+        // The ERP is authoritative for nightly rates. extractErpPrices maps each
+        // returned room onto a website type and keeps its pricePerNight; types the
+        // ERP doesn't price keep their rate-card figure rather than becoming zero.
+        const { prices: erpPrices, trace } = extractErpPrices(data.availableRooms);
 
-            if (type && price > 0) {
-              acc[type] = price;
-            }
+        if (DEBUG_PRICES) {
+          console.groupCollapsed(
+            `%c[booking prices] ${currentCheckIn} → ${currentCheckOut}`,
+            `color:${Object.keys(erpPrices).length ? '#16a34a' : '#dc2626'};font-weight:bold`,
+          );
+          console.log('1. ERP availableRooms :', data.availableRooms);
+          console.log('2. erpPrices extracted:', erpPrices);
+          console.log('   mapping trace      :', trace);
+          if (Object.keys(erpPrices).length === 0) {
+            console.warn(
+              'ERP supplied no usable rates — the rate card will show. ' +
+                'availableRooms length:', data.availableRooms.length,
+            );
+          }
+          console.groupEnd();
+        }
 
-            return acc;
-          },
-          {}
-        );
-
-        setLivePrices(prev => ({ ...prev, ...erpPrices }));
+        setLivePrices(prev => {
+          const next = { ...prev, ...erpPrices };
+          if (DEBUG_PRICES) console.log('3. livePrices stored  :', next);
+          return next;
+        });
       }
     } catch (err: any) {
       console.warn('ERP searchRoomsApi error:', err.message || err);

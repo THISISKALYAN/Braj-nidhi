@@ -8,6 +8,7 @@ import {
   Leaf, ArrowRight, Check, Clock, Info, Menu, X, ChevronDown, ChevronUp, Moon
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useLivePrices } from '@/hooks/useLivePrices';
 
 const BookNowButton = dynamic(() => import('@/components/BookNowButton'), { ssr: false });
 const RoomUnavailablePopup = dynamic(() => import('@/components/RoomUnavailablePopup'), { ssr: false });
@@ -94,6 +95,14 @@ function RoomsComboContent() {
   const guestsStr  = searchParams.get('guests') || `${adults} Adults`;
   const nights     = getNights(checkIn, checkOut);
   const totalGuests = adults + children;
+
+  // Nightly rates come from the ERP for the guest's dates (today's rate before
+  // dates are chosen), falling back to the rate card only per room type that the
+  // ERP does not price. Polls so a same-day rate change reaches the page.
+  const { prices: livePrices } = useLivePrices(checkIn, checkOut, {
+    guests: totalGuests,
+    pollMs: 60_000,
+  });
 
   const [roomSelections, setRoomSelections] = useState<Record<string, number>>(() => {
     const init: Record<string, number> = {};
@@ -535,7 +544,9 @@ function RoomsComboContent() {
           <div className="rcp-rooms-label">Available Rooms & Suites — Select to Continue</div>
 
           {ROOMS.map((room) => {
-            const discountPct = Math.round((1 - room.pricePerNight / room.mrpPrice) * 100);
+            // ERP rate when it has one for these dates, rate card otherwise.
+            const livePrice = livePrices[room.key];
+            const discountPct = Math.round((1 - livePrice / room.mrpPrice) * 100);
             const isExpanded  = expandedRoom === room.key;
             const isSelected  = (roomSelections[room.key] || 0) > 0;
             const avail = roomAvail[room.key];
@@ -588,9 +599,11 @@ function RoomsComboContent() {
                   <div className="rcp-room-header-right">
                     <div className="rcp-price-block">
                       <div className="rcp-price-mrp">₹{room.mrpPrice.toLocaleString('en-IN')}</div>
-                      <div className="rcp-price-main">₹{room.pricePerNight.toLocaleString('en-IN')}</div>
+                      <div className="rcp-price-main">₹{livePrice.toLocaleString('en-IN')}</div>
                       <div className="rcp-price-night">Per Room / Night</div>
-                      <div className="rcp-price-save">{discountPct}% off MRP</div>
+                      {discountPct > 0 && (
+                        <div className="rcp-price-save">{discountPct}% off MRP</div>
+                      )}
                     </div>
                     <div className={`rcp-chevron${isExpanded ? ' open' : ''}`}>
                       {isExpanded ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}
@@ -801,7 +814,7 @@ function RoomsComboContent() {
                       <div key={k} style={{ marginBottom: '8px' }}>
                         <div className="rcp-sel-name">{room.title}</div>
                         <div className="rcp-sel-price" style={{ fontSize: '14px' }}>
-                          ₹{room.pricePerNight.toLocaleString('en-IN')} × {v} room{v > 1 ? 's' : ''}
+                          ₹{livePrices[room.key].toLocaleString('en-IN')} × {v} room{v > 1 ? 's' : ''}
                         </div>
                       </div>
                     );
@@ -813,7 +826,7 @@ function RoomsComboContent() {
                         .filter(([k, v]) => v > 0)
                         .reduce((sum, [k, v]) => {
                           const r = ROOMS.find(x => x.key === k);
-                          return sum + (r ? r.pricePerNight * nights * v : 0);
+                          return sum + (r ? livePrices[r.key] * nights * v : 0);
                         }, 0)
                         .toLocaleString('en-IN')}
                   </strong>

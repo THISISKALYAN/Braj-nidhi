@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import { useLivePrices } from '@/hooks/useLivePrices';
 
 const FloatingWidgets = dynamic(() => import('@/components/FloatingWidgets'), { ssr: false });
 const BookNowButton = dynamic(() => import('@/components/BookNowButton'), { ssr: false });
@@ -151,8 +152,13 @@ export default function Home() {
   const [roomModal, setRoomModal] = useState<{ open: boolean; roomType: 'deluxe2'|'deluxe3'|'deluxe4'; roomName: string; price: number }>({
     open: false, roomType: 'deluxe2', roomName: '', price: 0
   });
-  const openRoomModal = (roomType: 'deluxe2'|'deluxe3'|'deluxe4', roomName: string, price: number) => {
-    setRoomModal({ open: true, roomType, roomName, price });
+  /**
+   * Price comes from livePrices by type so no caller can pass a stale figure.
+   * livePrices is declared further down (it depends on bookingData); this body
+   * only runs on click, by which time it is initialised.
+   */
+  const openRoomModal = (roomType: 'deluxe2'|'deluxe3'|'deluxe4', roomName: string) => {
+    setRoomModal({ open: true, roomType, roomName, price: livePrices[roomType] });
   };
 
   const formatDateFriendly = (dateStr: string) => {
@@ -192,11 +198,8 @@ export default function Home() {
   // Removed aggressive preloading to fix enormous network payloads and LCP issue.
   // Next.js <Image> with priority={true} on the first slide handles LCP optimally.
 
-  const roomPrices: Record<string, number> = {
-    'Deluxe 2 – Twin Bedded Room': 3500,
-    'Deluxe 3 – 3 Bedded Room': 4500,
-    'Deluxe 4 – 4 Bedded Room': 5500
-  };
+  // Room prices intentionally live only in livePrices (ERP-backed) — a static map
+  // here previously shadowed the live rates.
 
   const roomOccupancy: Record<string, string> = {
     'Deluxe 2 – Twin Bedded Room': '2 guests',
@@ -223,6 +226,14 @@ export default function Home() {
     pets: false,
     eventType: 'Corporate Offsite'
   });
+
+  // Nightly rates from the ERP. Once the guest picks dates in the hero search
+  // widget the lookup follows them, so cards show the rate for that stay.
+  const { prices: livePrices } = useLivePrices(
+    bookingData.checkIn,
+    bookingData.checkOut,
+    { pollMs: 60_000 },
+  );
 
   const [tempRoomCounts, setTempRoomCounts] = useState({
     deluxe2: 1,
@@ -440,17 +451,18 @@ export default function Home() {
     let roomsText = [];
     let totalPrice = 0;
     
+    // Quoted from the live ERP rates, so the figure matches what the cards show.
     if (bookingData.roomCounts.deluxe2 > 0) {
       roomsText.push(`${bookingData.roomCounts.deluxe2}x Deluxe 2`);
-      totalPrice += bookingData.roomCounts.deluxe2 * (roomPrices['Deluxe 2 – Twin Bedded Room'] || 3500);
+      totalPrice += bookingData.roomCounts.deluxe2 * livePrices.deluxe2;
     }
     if (bookingData.roomCounts.deluxe3 > 0) {
       roomsText.push(`${bookingData.roomCounts.deluxe3}x Deluxe 3`);
-      totalPrice += bookingData.roomCounts.deluxe3 * (roomPrices['Deluxe 3 – 3 Bedded Room'] || 4500);
+      totalPrice += bookingData.roomCounts.deluxe3 * livePrices.deluxe3;
     }
     if (bookingData.roomCounts.deluxe4 > 0) {
       roomsText.push(`${bookingData.roomCounts.deluxe4}x Deluxe 4`);
-      totalPrice += bookingData.roomCounts.deluxe4 * (roomPrices['Deluxe 4 – 4 Bedded Room'] || 5500);
+      totalPrice += bookingData.roomCounts.deluxe4 * livePrices.deluxe4;
     }
 
     const roomDetails = roomsText.length > 0 ? roomsText.join(', ') : 'None';
@@ -945,7 +957,7 @@ Event: ${bookingData.eventType}`);
                             <span><i className="fas fa-concierge-bell"></i> 24/7 Room Service</span>
                             <span><i className="fas fa-pump-soap"></i> Premium Grooming Kit</span>
                         </div>
-                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe2', 'Deluxe 2 – Twin Bedded Room', 3500)}>Book for ₹3,500 <i className="fas fa-chevron-right"></i></button>
+                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe2', 'Deluxe 2 – Twin Bedded Room')}>Book for ₹{livePrices.deluxe2.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
 
@@ -961,7 +973,7 @@ Event: ${bookingData.eventType}`);
                             <span><i className="fas fa-pump-soap"></i> Premium Grooming Kit</span>
                             <span><i className="fas fa-place-of-worship"></i> Temple Access</span>
                         </div>
-                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe3', 'Deluxe 3 – 3 Bedded Room', 4500)}>Book for ₹4,500 <i className="fas fa-chevron-right"></i></button>
+                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe3', 'Deluxe 3 – 3 Bedded Room')}>Book for ₹{livePrices.deluxe3.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
 
@@ -978,7 +990,7 @@ Event: ${bookingData.eventType}`);
                             <span><i className="fas fa-place-of-worship"></i> Temple Access</span>
                             <span><i className="fas fa-tree"></i> Vrindavan Chandrodaya Mandir Park Access</span>
                         </div>
-                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe4', 'Deluxe 4 – 4 Bedded Room', 5500)}>Book for ₹5,500 <i className="fas fa-chevron-right"></i></button>
+                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe4', 'Deluxe 4 – 4 Bedded Room')}>Book for ₹{livePrices.deluxe4.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
             </div>

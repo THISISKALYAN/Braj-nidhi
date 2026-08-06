@@ -5,7 +5,7 @@ const ERP_API_KEY = process.env.ERP_API_KEY;
 const ERP_API_SECRET = process.env.ERP_API_SECRET;
 const ERP_BASE_URL =
   process.env.ERP_BASE_URL ||
-  'https://test.vcmerp.in/api/method/guesthouse.website_booking_api';
+  'https://erp.vcmerp.in/api/method/guesthouse.website_booking_api';
 
 /**
  * Whitelist of ERP methods that are safe to call from the frontend.

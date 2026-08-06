@@ -12,12 +12,15 @@ function getRazorpay() {
 /**
  * Accepted order amount range, in rupees.
  *
- * Narrowed to ₹1–₹100 for live payment-gateway testing. Note this is below the
- * real tariff, so any genuine booking (₹3,500+ per night) is rejected while this
- * window is in force — widen MAX_AMOUNT again before taking real bookings.
+ * ₹1 is Razorpay's own floor (100 paise). The ₹5,00,000 ceiling covers the
+ * largest realistic multi-room, multi-night stay while still bounding the damage
+ * from a malformed or tampered amount.
  */
 const MIN_AMOUNT = 1;
-const MAX_AMOUNT = 100;
+const MAX_AMOUNT = 500_000;
+
+/** Indian digit grouping, so the error reads "₹5,00,000" rather than "₹500000". */
+const formatRupees = (value: number) => `₹${value.toLocaleString('en-IN')}`;
 
 export async function POST(request: NextRequest) {
   // ── Rate limit: 5 orders/min per IP ─────────────────────────────────────────
@@ -33,7 +36,9 @@ export async function POST(request: NextRequest) {
     const parsedAmount = Number(amount);
     if (!amount || isNaN(parsedAmount) || parsedAmount < MIN_AMOUNT || parsedAmount > MAX_AMOUNT) {
       return Response.json(
-        { error: `Invalid amount. Must be between ₹${MIN_AMOUNT} and ₹${MAX_AMOUNT}.` },
+        {
+          error: `Invalid amount. Must be between ${formatRupees(MIN_AMOUNT)} and ${formatRupees(MAX_AMOUNT)}.`,
+        },
         { status: 400 },
       );
     }

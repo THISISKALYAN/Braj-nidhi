@@ -158,7 +158,7 @@ export default function Home() {
    * only runs on click, by which time it is initialised.
    */
   const openRoomModal = (roomType: 'deluxe2'|'deluxe3'|'deluxe4', roomName: string) => {
-    setRoomModal({ open: true, roomType, roomName, price: livePrices[roomType] });
+    setRoomModal({ open: true, roomType, roomName, price: livePrices[roomType] ?? 0 });
   };
 
   const formatDateFriendly = (dateStr: string) => {
@@ -214,15 +214,17 @@ export default function Home() {
     return `${total} guest${total > 1 ? 's' : ''}`;
   };
 
+  /** Nothing is selected until the guest picks it — see NO_ROOMS_SELECTED. */
+  const EMPTY_ROOM_COUNTS = { deluxe2: 0, deluxe3: 0, deluxe4: 0 };
+  const ROOMS_PLACEHOLDER = 'Select Rooms';
+
   const [bookingData, setBookingData] = useState({
     checkIn: '',
     checkOut: '',
-    guests: '1 Room, 2 Guests',
-    roomCounts: {
-      deluxe2: 1,
-      deluxe3: 0,
-      deluxe4: 0
-    },
+    // No room is preselected: the label stays a placeholder until the guest
+    // adds a room, so the widget never implies Deluxe 2 was chosen for them.
+    guests: ROOMS_PLACEHOLDER,
+    roomCounts: { ...EMPTY_ROOM_COUNTS },
     pets: false,
     eventType: 'Corporate Offsite'
   });
@@ -239,6 +241,31 @@ export default function Home() {
     bookingData.roomCounts.deluxe3 * 3 +
     bookingData.roomCounts.deluxe4 * 4;
 
+  /** Shown under the search bar when the guest searches without picking a room. */
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  /**
+   * Search URL carrying only the room types the guest actually chose — types
+   * left at zero are omitted entirely rather than sent as `deluxe2=0`, so
+   * nothing downstream can read them as a selection.
+   */
+  const buildSearchUrl = () => {
+    const params = new URLSearchParams({
+      checkin: bookingData.checkIn,
+      checkout: bookingData.checkOut,
+      rooms: String(selectedRoomCount),
+      adults: String(selectedGuestCount),
+      children: '0',
+      guests: bookingData.guests,
+    });
+
+    for (const [key, qty] of Object.entries(bookingData.roomCounts)) {
+      if (qty > 0) params.set(key, String(qty));
+    }
+
+    return `/rooms-combo?${params.toString()}`;
+  };
+
   /**
    * Nightly rates from the ERP for the stay currently configured in the hero
    * widget. Dates, guest count and room count are all inputs, so changing any
@@ -254,40 +281,42 @@ export default function Home() {
     },
   );
 
-  const [tempRoomCounts, setTempRoomCounts] = useState({
-    deluxe2: 1,
-    deluxe3: 0,
-    deluxe4: 0
-  });
+  const [tempRoomCounts, setTempRoomCounts] = useState({ ...EMPTY_ROOM_COUNTS });
   const [tempPets, setTempPets] = useState(false);
 
   useEffect(() => {
     if (openDropdown === 'guests') {
-      setTempRoomCounts(bookingData.roomCounts || { deluxe2: 1, deluxe3: 0, deluxe4: 0 });
+      // Opening the panel mirrors the current selection, which is empty until
+      // the guest adds a room — it must not seed a room of its own.
+      setTempRoomCounts(bookingData.roomCounts ?? { ...EMPTY_ROOM_COUNTS });
       setTempPets(bookingData.pets);
     }
   }, [openDropdown]);
 
   const handleApplyGuests = () => {
-    const totalRooms = tempRoomCounts.deluxe2 + tempRoomCounts.deluxe3 + tempRoomCounts.deluxe4;
-    const totalGuests = (tempRoomCounts.deluxe2 * 2) + (tempRoomCounts.deluxe3 * 3) + (tempRoomCounts.deluxe4 * 4);
-    
-    // Ensure at least 1 room is selected if they try to apply 0 rooms
-    if (totalRooms === 0) {
-      tempRoomCounts.deluxe2 = 1;
-    }
-    
-    const finalRooms = tempRoomCounts.deluxe2 + tempRoomCounts.deluxe3 + tempRoomCounts.deluxe4;
-    const finalGuests = (tempRoomCounts.deluxe2 * 2) + (tempRoomCounts.deluxe3 * 3) + (tempRoomCounts.deluxe4 * 4);
-    
-    const guestsLabel = `${finalRooms} Room${finalRooms > 1 ? 's' : ''}, ${finalGuests} Guest${finalGuests > 1 ? 's' : ''}`;
-    
+    const finalRooms =
+      tempRoomCounts.deluxe2 + tempRoomCounts.deluxe3 + tempRoomCounts.deluxe4;
+    const finalGuests =
+      tempRoomCounts.deluxe2 * 2 +
+      tempRoomCounts.deluxe3 * 3 +
+      tempRoomCounts.deluxe4 * 4;
+
+    // Applying zero rooms is a valid state and is kept as-is. This previously
+    // forced deluxe2 to 1 — and did so by mutating the state object in place —
+    // which is what made Deluxe 2 look self-selecting.
+    const guestsLabel =
+      finalRooms === 0
+        ? ROOMS_PLACEHOLDER
+        : `${finalRooms} Room${finalRooms > 1 ? 's' : ''}, ${finalGuests} Guest${finalGuests > 1 ? 's' : ''}`;
+
     setBookingData(prev => ({
       ...prev,
       roomCounts: { ...tempRoomCounts },
       pets: tempPets,
       guests: guestsLabel
     }));
+    // Clear the "select at least one room" prompt as soon as one is chosen.
+    if (finalRooms > 0) setSearchError(null);
     setOpenDropdown(null);
   };
 
@@ -473,15 +502,15 @@ export default function Home() {
     // Quoted from the live ERP rates, so the figure matches what the cards show.
     if (bookingData.roomCounts.deluxe2 > 0) {
       roomsText.push(`${bookingData.roomCounts.deluxe2}x Deluxe 2`);
-      totalPrice += bookingData.roomCounts.deluxe2 * livePrices.deluxe2;
+      totalPrice += bookingData.roomCounts.deluxe2 * (livePrices.deluxe2 ?? 0);
     }
     if (bookingData.roomCounts.deluxe3 > 0) {
       roomsText.push(`${bookingData.roomCounts.deluxe3}x Deluxe 3`);
-      totalPrice += bookingData.roomCounts.deluxe3 * livePrices.deluxe3;
+      totalPrice += bookingData.roomCounts.deluxe3 * (livePrices.deluxe3 ?? 0);
     }
     if (bookingData.roomCounts.deluxe4 > 0) {
       roomsText.push(`${bookingData.roomCounts.deluxe4}x Deluxe 4`);
-      totalPrice += bookingData.roomCounts.deluxe4 * livePrices.deluxe4;
+      totalPrice += bookingData.roomCounts.deluxe4 * (livePrices.deluxe4 ?? 0);
     }
 
     const roomDetails = roomsText.length > 0 ? roomsText.join(', ') : 'None';
@@ -832,17 +861,29 @@ Event: ${bookingData.eventType}`);
                     {/* Search Button block */}
                     <div className="search-action-block" style={{ paddingLeft: '8px', borderLeft: '1px solid rgba(0, 0, 0, 0.08)' }}>
                         <Link
-                          href={(!bookingData.checkIn || !bookingData.checkOut) ? '#' : `/rooms-combo?checkin=${bookingData.checkIn}&checkout=${bookingData.checkOut}&rooms=${
-                            bookingData.roomCounts.deluxe2 + bookingData.roomCounts.deluxe3 + bookingData.roomCounts.deluxe4
-                          }&adults=${
-                            (bookingData.roomCounts.deluxe2 * 2) + (bookingData.roomCounts.deluxe3 * 3) + (bookingData.roomCounts.deluxe4 * 4)
-                          }&children=0&guests=${encodeURIComponent(bookingData.guests)}&deluxe2=${bookingData.roomCounts.deluxe2}&deluxe3=${bookingData.roomCounts.deluxe3}&deluxe4=${bookingData.roomCounts.deluxe4}`}
+                          href={
+                            !bookingData.checkIn || !bookingData.checkOut || selectedRoomCount === 0
+                              ? '#'
+                              : buildSearchUrl()
+                          }
                           onClick={(e) => {
+                            // Dates first, then rooms — each unmet requirement
+                            // opens the panel that fixes it instead of searching.
                             if (!bookingData.checkIn || !bookingData.checkOut) {
                               e.preventDefault();
+                              setSearchError('Please select your check-in and check-out dates.');
                               setCalendarInitialSelection('in');
                               setIsCalendarOpen(true);
+                              return;
                             }
+                            if (selectedRoomCount === 0) {
+                              e.preventDefault();
+                              setSearchError('Please select at least one room before searching.');
+                              setIsCalendarOpen(false);
+                              setOpenDropdown('guests');
+                              return;
+                            }
+                            setSearchError(null);
                           }}
                           className="search-circle-button"
                           aria-label="Search Suites"
@@ -852,6 +893,26 @@ Event: ${bookingData.eventType}`);
                     </div>
 
                 </div>
+
+                {searchError && (
+                  <div
+                    role="alert"
+                    aria-live="polite"
+                    style={{
+                      marginTop: '12px',
+                      padding: '10px 18px',
+                      borderRadius: '999px',
+                      background: 'rgba(239, 68, 68, 0.92)',
+                      color: '#fff',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      textAlign: 'center',
+                      boxShadow: '0 6px 18px rgba(0,0,0,0.25)',
+                    }}
+                  >
+                    {searchError}
+                  </div>
+                )}
             </div>
         </section>
 
@@ -976,7 +1037,7 @@ Event: ${bookingData.eventType}`);
                             <span><i className="fas fa-concierge-bell"></i> 24/7 Room Service</span>
                             <span><i className="fas fa-pump-soap"></i> Premium Grooming Kit</span>
                         </div>
-                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe2', 'Deluxe 2 – Twin Bedded Room')}>Book for ₹{livePrices.deluxe2.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
+                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe2', 'Deluxe 2 – Twin Bedded Room')}>Book for ₹{(livePrices.deluxe2 ?? 0).toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
 
@@ -992,7 +1053,7 @@ Event: ${bookingData.eventType}`);
                             <span><i className="fas fa-pump-soap"></i> Premium Grooming Kit</span>
                             <span><i className="fas fa-place-of-worship"></i> Temple Access</span>
                         </div>
-                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe3', 'Deluxe 3 – 3 Bedded Room')}>Book for ₹{livePrices.deluxe3.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
+                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe3', 'Deluxe 3 – 3 Bedded Room')}>Book for ₹{(livePrices.deluxe3 ?? 0).toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
 
@@ -1009,7 +1070,7 @@ Event: ${bookingData.eventType}`);
                             <span><i className="fas fa-place-of-worship"></i> Temple Access</span>
                             <span><i className="fas fa-tree"></i> Vrindavan Chandrodaya Mandir Park Access</span>
                         </div>
-                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe4', 'Deluxe 4 – 4 Bedded Room')}>Book for ₹{livePrices.deluxe4.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
+                        <button className="btn-availability" style={{ display: "block", width: "100%", textAlign: "center", border: "none", cursor: "pointer" }} onClick={() => openRoomModal('deluxe4', 'Deluxe 4 – 4 Bedded Room')}>Book for ₹{(livePrices.deluxe4 ?? 0).toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
             </div>

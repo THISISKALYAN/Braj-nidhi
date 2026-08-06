@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  FALLBACK_PRICES,
   resolvePrices,
   type RoomKey,
 } from '@/lib/roomPricing';
@@ -21,7 +20,7 @@ import {
 export type PriceSource = 'erp' | 'partial' | 'fallback' | 'loading';
 
 interface PricesResponse {
-  prices: Record<RoomKey, number>;
+  prices: Partial<Record<RoomKey, number>>;
   livePriced?: RoomKey[];
   source: Exclude<PriceSource, 'loading'>;
   reason?: string;
@@ -32,7 +31,7 @@ interface PricesResponse {
 }
 
 export interface UseLivePricesResult {
-  prices: Record<RoomKey, number>;
+  prices: Partial<Record<RoomKey, number>>;
   livePriced: RoomKey[];
   source: PriceSource;
   reason?: string;
@@ -50,7 +49,7 @@ export function useLivePrices(
   checkOut?: string,
   options?: { guests?: number; rooms?: number; pollMs?: number },
 ): UseLivePricesResult {
-  const [prices, setPrices] = useState<Record<RoomKey, number>>(FALLBACK_PRICES);
+  const [prices, setPrices] = useState<Partial<Record<RoomKey, number>>>({});
   const [livePriced, setLivePriced] = useState<RoomKey[]>([]);
   const [source, setSource] = useState<PriceSource>('loading');
   const [reason, setReason] = useState<string | undefined>();
@@ -105,7 +104,7 @@ export function useLivePrices(
         }
       } catch (error) {
         if (cancelled) return;
-        setPrices(FALLBACK_PRICES);
+        setPrices({});
         setLivePriced([]);
         setSource('fallback');
         setReason(error instanceof Error ? error.message : 'Price lookup failed.');

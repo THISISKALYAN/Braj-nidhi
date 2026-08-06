@@ -116,6 +116,7 @@ export function buildErpRooms(input: BuildRoomsInput): BuildRoomsResult {
     const qty = Math.floor(Number(rawQty) || 0);
     if (qty <= 0) continue;
     const key = normalizeRoomKey(rawKey);
+    if (!key) continue;
     merged.set(key, (merged.get(key) ?? 0) + qty);
   }
 

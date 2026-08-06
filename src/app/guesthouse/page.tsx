@@ -64,7 +64,7 @@ export default function Guesthouse() {
 
   /** Price is taken from livePrices by type, so callers can't pass a stale figure. */
   const openRoomModal = (roomType: 'deluxe2'|'deluxe3'|'deluxe4', roomName: string) => {
-    setRoomModal({ open: true, roomType, roomName, price: livePrices[roomType] });
+    setRoomModal({ open: true, roomType, roomName, price: livePrices[roomType] ?? 0 });
   };
 
   useEffect(() => {
@@ -1790,7 +1790,7 @@ export default function Guesthouse() {
                                     <span><i className="fas fa-concierge-bell"></i> 24/7 Room Service</span>
                                     <span><i className="fas fa-pump-soap"></i> Premium Grooming Kit</span>
                                 </div>
-                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe2', 'Deluxe 2 – Twin Bedded Room')}>Book for ₹{livePrices.deluxe2.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
+                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe2', 'Deluxe 2 – Twin Bedded Room')}>Book for ₹{(livePrices.deluxe2 ?? 0).toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                             </div>
                         </div>
 
@@ -1807,7 +1807,7 @@ export default function Guesthouse() {
                                     <span><i className="fas fa-pump-soap"></i> Premium Grooming Kit</span>
                                     <span><i className="fas fa-place-of-worship"></i> Temple Access</span>
                                 </div>
-                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe3', 'Deluxe 3 – 3 Bedded Room')}>Book for ₹{livePrices.deluxe3.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
+                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe3', 'Deluxe 3 – 3 Bedded Room')}>Book for ₹{(livePrices.deluxe3 ?? 0).toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                             </div>
                         </div>
 
@@ -1825,7 +1825,7 @@ export default function Guesthouse() {
                                     <span><i className="fas fa-place-of-worship"></i> Temple Access</span>
                                     <span><i className="fas fa-tree"></i> Vrindavan Chandrodaya Mandir Park Access</span>
                                 </div>
-                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe4', 'Deluxe 4 – 4 Bedded Room')}>Book for ₹{livePrices.deluxe4.toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
+                                <button className="btn-availability" style={{ border: "none", cursor: "pointer", width: "100%" }} onClick={() => openRoomModal('deluxe4', 'Deluxe 4 – 4 Bedded Room')}>Book for ₹{(livePrices.deluxe4 ?? 0).toLocaleString('en-IN')} <i className="fas fa-chevron-right"></i></button>
                             </div>
                         </div>
                     </div>
@@ -1980,12 +1980,12 @@ export default function Guesthouse() {
                 <img loading="lazy" decoding="async" src="z.webp" alt="Deluxe Room" />
                 <div className="promo2-price-badge">
                     <div className="price-top">
-                        <span className="price-num">3.5</span>
+                        <span className="price-num">{livePrices.deluxe2 ? (livePrices.deluxe2 / 1000).toFixed(1) : '?'}</span>
                         <span className="price-text">K ₹<br />PER ROOM</span>
                         <motion.i className="fas fa-cube" style={{"fontSize":"1.5rem","marginLeft":"auto","color":"#1a1a1a"}} animate={{ rotate: 360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} />
                     </div>
                     <div className="price-bottom">
-                        START FROM 3,500 ₹ PER NIGHT.
+                        {livePrices.deluxe2 ? `START FROM ${livePrices.deluxe2.toLocaleString('en-IN')} ₹ PER NIGHT.` : 'CHECK LIVE PRICE'}
                     </div>
                 </div>
             </div>

@@ -15,6 +15,19 @@ export default function Weddings() {
 
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    eventType: 'wedding',
+    guestCount: '',
+    expectedDate: '',
+    additionalRequirements: ''
+  });
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -27,6 +40,40 @@ export default function Weddings() {
     }, 5000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+    setErrorMessage('');
+    
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formType: 'wedding',
+          ...formData
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit inquiry');
+      
+      setStatus('success');
+      setFormData({
+        firstName: '', lastName: '', email: '', phone: '',
+        eventType: 'wedding', guestCount: '', expectedDate: '', additionalRequirements: ''
+      });
+    } catch (err: any) {
+      console.error(err);
+      setStatus('error');
+      setErrorMessage(err.message);
+    }
+  };
 
 
 
@@ -1294,26 +1341,26 @@ export default function Weddings() {
                     transition={{ duration: 0.8 }}
                 >
                     <div className="form-card-title">Fill in Your Details</div>
-                    <form className="inquiry-form">
+                    <form className="inquiry-form" onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label>First Name</label>
-                            <input type="text" placeholder="e.g. Priya" required />
+                            <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="e.g. Priya" required />
                         </div>
                         <div className="form-group">
                             <label>Last Name</label>
-                            <input type="text" placeholder="e.g. Sharma" required />
+                            <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="e.g. Sharma" required />
                         </div>
                         <div className="form-group">
                             <label>Email Address</label>
-                            <input type="email" placeholder="priya@example.com" required />
+                            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="priya@example.com" required />
                         </div>
                         <div className="form-group">
                             <label>Phone Number</label>
-                            <input type="tel" placeholder="+91 90000 00000" required />
+                            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 90000 00000" required />
                         </div>
                         <div className="form-group full-width">
                             <label>Event Type</label>
-                            <select required defaultValue="wedding">
+                            <select name="eventType" value={formData.eventType} onChange={handleChange} required>
                                 <option value="wedding">Wedding</option>
                                 <option value="pre-wedding">Pre-Wedding / Engagement</option>
                                 <option value="anniversary">Anniversary Celebration</option>
@@ -1321,17 +1368,31 @@ export default function Weddings() {
                         </div>
                         <div className="form-group">
                             <label>Estimated Guest Count</label>
-                            <input type="number" placeholder="e.g. 150" />
+                            <input type="number" name="guestCount" value={formData.guestCount} onChange={handleChange} placeholder="e.g. 150" />
                         </div>
                         <div className="form-group">
                             <label>Expected Date</label>
-                            <input type="date" />
+                            <input type="date" name="expectedDate" value={formData.expectedDate} onChange={handleChange} />
                         </div>
                         <div className="form-group full-width">
                             <label>Additional Requirements</label>
-                            <textarea rows={4} placeholder="Tell us about your vision — decor style, catering preferences, special rituals..."></textarea>
+                            <textarea rows={4} name="additionalRequirements" value={formData.additionalRequirements} onChange={handleChange} placeholder="Tell us about your vision — decor style, catering preferences, special rituals..."></textarea>
                         </div>
-                        <button type="submit">Send Inquiry <i className="fas fa-paper-plane"></i></button>
+                        
+                        {status === 'success' && (
+                            <div className="form-group full-width" style={{ padding: '12px', background: '#e6ffe6', color: '#006600', borderRadius: '8px', border: '1px solid #00cc00', textAlign: 'center' }}>
+                                Thank you for your inquiry! Our weddings team will reach out to you shortly.
+                            </div>
+                        )}
+                        {status === 'error' && (
+                            <div className="form-group full-width" style={{ padding: '12px', background: '#ffe6e6', color: '#cc0000', borderRadius: '8px', border: '1px solid #cc0000', textAlign: 'center' }}>
+                                {errorMessage}
+                            </div>
+                        )}
+
+                        <button type="submit" disabled={status === 'loading'} style={{ opacity: status === 'loading' ? 0.7 : 1 }}>
+                            {status === 'loading' ? 'Sending...' : 'Send Inquiry'} <i className="fas fa-paper-plane"></i>
+                        </button>
                     </form>
                     <p className="form-footer-note"><i className="fas fa-lock"></i> Your information is secure and confidential</p>
                 </motion.div>

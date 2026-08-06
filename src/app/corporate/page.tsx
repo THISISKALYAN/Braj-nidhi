@@ -13,6 +13,19 @@ export default function Corporate() {
 
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    companyName: '',
+    contactPerson: '',
+    email: '',
+    phone: '',
+    eventType: 'conference',
+    attendees: '',
+    expectedDate: '',
+    additionalRequirements: ''
+  });
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -25,6 +38,40 @@ export default function Corporate() {
     }, 5000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+    setErrorMessage('');
+    
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formType: 'corporate',
+          ...formData
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit inquiry');
+      
+      setStatus('success');
+      setFormData({
+        companyName: '', contactPerson: '', email: '', phone: '',
+        eventType: 'conference', attendees: '', expectedDate: '', additionalRequirements: ''
+      });
+    } catch (err: any) {
+      console.error(err);
+      setStatus('error');
+      setErrorMessage(err.message);
+    }
+  };
 
   useEffect(() => {
     let testimonialsSwiper: any;
@@ -1286,26 +1333,26 @@ export default function Corporate() {
                     transition={{ duration: 0.8 }}
                 >
                     <div className="form-card-title">Fill in Your Details</div>
-                    <form className="inquiry-form">
+                    <form className="inquiry-form" onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label>Company Name</label>
-                            <input type="text" placeholder="e.g. Acme Corp" required />
+                            <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} placeholder="e.g. Acme Corp" required />
                         </div>
                         <div className="form-group">
                             <label>Contact Person</label>
-                            <input type="text" placeholder="e.g. John Doe" required />
+                            <input type="text" name="contactPerson" value={formData.contactPerson} onChange={handleChange} placeholder="e.g. John Doe" required />
                         </div>
                         <div className="form-group">
                             <label>Email Address</label>
-                            <input type="email" placeholder="john@company.com" required />
+                            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="john@company.com" required />
                         </div>
                         <div className="form-group">
                             <label>Phone Number</label>
-                            <input type="tel" placeholder="+91 90000 00000" required />
+                            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 90000 00000" required />
                         </div>
                         <div className="form-group full-width">
                             <label>Event Type</label>
-                            <select required defaultValue="conference">
+                            <select name="eventType" value={formData.eventType} onChange={handleChange} required>
                                 <option value="conference">Day Conference</option>
                                 <option value="retreat">Leadership Retreat / Offsite</option>
                                 <option value="meeting">Board Meeting</option>
@@ -1314,17 +1361,31 @@ export default function Corporate() {
                         </div>
                         <div className="form-group">
                             <label>Estimated Attendees</label>
-                            <input type="number" placeholder="e.g. 50" />
+                            <input type="number" name="attendees" value={formData.attendees} onChange={handleChange} placeholder="e.g. 50" />
                         </div>
                         <div className="form-group">
                             <label>Expected Date</label>
-                            <input type="date" />
+                            <input type="date" name="expectedDate" value={formData.expectedDate} onChange={handleChange} />
                         </div>
                         <div className="form-group full-width">
                             <label>Additional Requirements</label>
-                            <textarea rows={4} placeholder="Describe your needs — AV setup, accommodation, catering preferences, breakout sessions..."></textarea>
+                            <textarea rows={4} name="additionalRequirements" value={formData.additionalRequirements} onChange={handleChange} placeholder="Describe your needs — AV setup, accommodation, catering preferences, breakout sessions..."></textarea>
                         </div>
-                        <button type="submit">Send Inquiry <i className="fas fa-paper-plane"></i></button>
+                        
+                        {status === 'success' && (
+                            <div className="form-group full-width" style={{ padding: '12px', background: '#e6ffe6', color: '#006600', borderRadius: '8px', border: '1px solid #00cc00', textAlign: 'center' }}>
+                                Thank you for your inquiry! Our corporate team will reach out to you shortly.
+                            </div>
+                        )}
+                        {status === 'error' && (
+                            <div className="form-group full-width" style={{ padding: '12px', background: '#ffe6e6', color: '#cc0000', borderRadius: '8px', border: '1px solid #cc0000', textAlign: 'center' }}>
+                                {errorMessage}
+                            </div>
+                        )}
+
+                        <button type="submit" disabled={status === 'loading'} style={{ opacity: status === 'loading' ? 0.7 : 1 }}>
+                            {status === 'loading' ? 'Sending...' : 'Send Inquiry'} <i className="fas fa-paper-plane"></i>
+                        </button>
                     </form>
 <p className="form-footer-note"><i className="fas fa-lock"></i> Your information is secure and confidential</p>
                 </motion.div>

@@ -28,8 +28,12 @@ export default function Contact() {
     email: "",
     phone: "",
     interest: "",
+    date: "",
+    guests: "",
     message: "",
   });
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -44,9 +48,33 @@ export default function Contact() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Thank you for your inquiry! We will get back to you within 24 hours.");
+    setStatus('loading');
+    setErrorMessage('');
+    
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formType: 'contact',
+          ...formData
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit inquiry');
+      
+      setStatus('success');
+      setFormData({
+        name: "", email: "", phone: "", interest: "", date: "", guests: "", message: "",
+      });
+    } catch (err: any) {
+      console.error(err);
+      setStatus('error');
+      setErrorMessage(err.message);
+    }
   };
 
   const fadeUp = {
@@ -781,11 +809,11 @@ export default function Contact() {
                 </div>
                 <div className="form-group">
                   <label>Expected Date</label>
-                  <input type="date" name="date" />
+                  <input type="date" name="date" value={formData.date || ""} onChange={handleChange} />
                 </div>
                 <div className="form-group">
                   <label>Number of Guests</label>
-                  <input type="number" name="guests" placeholder="e.g. 2" />
+                  <input type="number" name="guests" placeholder="e.g. 2" value={formData.guests || ""} onChange={handleChange} />
                 </div>
                 <div className="form-group full-width">
                   <label>Additional Requirements</label>
@@ -796,13 +824,27 @@ export default function Contact() {
                     onChange={handleChange}
                   />
                 </div>
+                
+                {status === 'success' && (
+                    <div className="form-group full-width" style={{ padding: '12px', background: '#e6ffe6', color: '#006600', borderRadius: '8px', border: '1px solid #00cc00', textAlign: 'center' }}>
+                        Thank you for your inquiry! Our team will reach out to you within 24 hours.
+                    </div>
+                )}
+                {status === 'error' && (
+                    <div className="form-group full-width" style={{ padding: '12px', background: '#ffe6e6', color: '#cc0000', borderRadius: '8px', border: '1px solid #cc0000', textAlign: 'center' }}>
+                        {errorMessage}
+                    </div>
+                )}
+
                 <motion.button
                   type="submit"
                   className="btn-submit-inquiry"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  disabled={status === 'loading'}
+                  style={{ opacity: status === 'loading' ? 0.7 : 1 }}
                 >
-                  Send Inquiry <i className="fas fa-paper-plane" />
+                  {status === 'loading' ? 'Sending...' : 'Send Inquiry'} <i className="fas fa-paper-plane" />
                 </motion.button>
               </form>
               <p className="form-footer-note">

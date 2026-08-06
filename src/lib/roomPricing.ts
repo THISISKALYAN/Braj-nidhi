@@ -11,16 +11,7 @@ export type RoomKey = 'deluxe2' | 'deluxe3' | 'deluxe4';
 
 export const ROOM_KEYS: RoomKey[] = ['deluxe2', 'deluxe3', 'deluxe4'];
 
-/**
- * Used only when the ERP returns no price for a room type. If these ever show
- * on the site while the ERP is reachable, the ERP returned nothing for that
- * type — check `source` on the /api/erp/prices response.
- */
-export const FALLBACK_PRICES: Record<RoomKey, number> = {
-  deluxe2: 3500,
-  deluxe3: 4500,
-  deluxe4: 5500,
-};
+
 
 export const ROOM_TITLES: Record<RoomKey, string> = {
   deluxe2: 'Deluxe 2 – Twin Bedded Room',
@@ -52,24 +43,29 @@ export const ERP_ROOM_TYPE_IDS: Record<RoomKey, string> = {
  * Order matters: deluxe4 is tested first because "Deluxe 4" also ends in a
  * digit that the deluxe3 branch would otherwise have to exclude.
  */
-export function normalizeRoomKey(raw: string): RoomKey {
+export function normalizeRoomKey(raw: string): RoomKey | null {
   const s = (raw || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!s) return null;
 
-  if (
-    s.includes('deluxe4') ||
-    s.includes('royal') ||
-    s.includes('family') ||
-    s.includes('quad') ||
-    s.endsWith('4')
-  ) {
-    return 'deluxe4';
-  }
+  // 1. An explicit "deluxe<N>" token is the strongest signal and must be read
+  //    before any trailing-digit guess. Once the ERP lists individual rooms the
+  //    IDs carry a room number — "BN-DELUXE-2-0003" ends in 3 — and checking the
+  //    last digit first filed those under Deluxe 3, so Deluxe 2 ended up with no
+  //    price at all while Deluxe 3's was overwritten.
+  const explicit = s.match(/deluxe0*([234])/);
+  if (explicit) return `deluxe${explicit[1]}` as RoomKey;
 
-  if (s.includes('deluxe3') || s.includes('triple') || s.endsWith('3')) {
-    return 'deluxe3';
-  }
+  // 2. Descriptive names, for types named rather than numbered.
+  if (s.includes('royal') || s.includes('family') || s.includes('quad')) return 'deluxe4';
+  if (s.includes('triple')) return 'deluxe3';
+  if (s.includes('twin') || s.includes('double')) return 'deluxe2';
 
-  return 'deluxe2';
+  // 3. Last resort for short codes with no type token, e.g. "BN-DLX-3".
+  if (s.endsWith('4')) return 'deluxe4';
+  if (s.endsWith('3')) return 'deluxe3';
+  if (s.endsWith('2')) return 'deluxe2';
+
+  return null;
 }
 
 /** Alias kept for readability at ERP call sites. */
@@ -112,7 +108,13 @@ export function extractErpPrices(rooms: unknown): ExtractedPrices {
   for (const entry of rooms as ErpRoom[]) {
     const rawId = String(entry?.roomTypeId ?? entry?.roomType ?? '');
     const rawPrice = entry?.pricePerNight;
-    const parsedPrice = Number(rawPrice ?? 0);
+    // Rounded to whole rupees here, once, so every consumer — room cards,
+    // the fare summary, the Razorpay charge, the ERP reservation — reads the
+    // same figure. Left unrounded, a rate like 3500.75 would display as-is on
+    // the room cards but be rounded to 3501 only when the reservation payload
+    // was built, so the guest would see one price and be charged another.
+    // `rawPrice` is kept as-is in the trace for diagnosing what the ERP sent.
+    const parsedPrice = Math.round(Number(rawPrice ?? 0));
 
     if (!rawId) {
       trace.push({ rawId, mappedTo: null, rawPrice, parsedPrice, used: false, reason: 'no roomTypeId' });
@@ -120,6 +122,11 @@ export function extractErpPrices(rooms: unknown): ExtractedPrices {
     }
 
     const mappedTo = normalizeRoomKey(rawId);
+    
+    if (!mappedTo) {
+      trace.push({ rawId, mappedTo: null, rawPrice, parsedPrice, used: false, reason: 'unknown room type' });
+      continue;
+    }
 
     if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
       trace.push({ rawId, mappedTo, rawPrice, parsedPrice, used: false, reason: 'price missing or not positive' });
@@ -141,11 +148,11 @@ export function extractErpPrices(rooms: unknown): ExtractedPrices {
   return { prices, trace };
 }
 
-/** Merge live ERP prices over the fallback card. */
+/** Merge live ERP prices. (Fallback removed per dynamic pricing requirement) */
 export function resolvePrices(
   live: Partial<Record<RoomKey, number>> | null | undefined,
-): Record<RoomKey, number> {
-  return { ...FALLBACK_PRICES, ...(live ?? {}) };
+): Partial<Record<RoomKey, number>> {
+  return live ?? {};
 }
 
 /** Format for display, e.g. 100 → "₹100". */

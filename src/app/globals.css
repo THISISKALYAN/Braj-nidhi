@@ -496,6 +496,7 @@ header.scrolled nav ul li a:hover {
     letter-spacing: 0.5px;
     color: #9ca3af;
     font-weight: 700;
+    white-space: nowrap;
 }
 
 .active-dark .block-label {

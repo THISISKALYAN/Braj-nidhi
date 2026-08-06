@@ -19,7 +19,6 @@ interface RoomOption {
   shortName: string;
   beds: string;
   maxGuests: number;
-  pricePerNight: number;
   mrpPrice: number;
   image: string;
   sqft: string;
@@ -34,7 +33,6 @@ const ROOMS: RoomOption[] = [
     shortName: 'Deluxe 2',
     beds: 'Twin Beds',
     maxGuests: 2,
-    pricePerNight: 3500,
     mrpPrice: 5000,
     image: '/DSC05818-HDR.webp',
     sqft: '280 sq.ft',
@@ -47,7 +45,6 @@ const ROOMS: RoomOption[] = [
     shortName: 'Deluxe 3',
     beds: '3 Single Beds',
     maxGuests: 3,
-    pricePerNight: 4500,
     mrpPrice: 6500,
     image: '/d3.webp',
     sqft: '340 sq.ft',
@@ -60,7 +57,6 @@ const ROOMS: RoomOption[] = [
     shortName: 'Deluxe 4',
     beds: '4-Poster Beds',
     maxGuests: 4,
-    pricePerNight: 5500,
     mrpPrice: 7200,
     image: '/DSC05963-HDR.webp',
     sqft: '420 sq.ft',
@@ -549,9 +545,9 @@ function RoomsComboContent() {
           <div className="rcp-rooms-label">Available Rooms & Suites — Select to Continue</div>
 
           {ROOMS.map((room) => {
-            // ERP rate when it has one for these dates, rate card otherwise.
-            const livePrice = livePrices[room.key];
-            const discountPct = Math.round((1 - livePrice / room.mrpPrice) * 100);
+            // ERP rate when it has one for these dates
+            const livePrice = livePrices[room.key] ?? 0;
+            const discountPct = livePrice > 0 ? Math.round((1 - livePrice / room.mrpPrice) * 100) : 0;
             const isExpanded  = expandedRoom === room.key;
             const isSelected  = (roomSelections[room.key] || 0) > 0;
             const avail = roomAvail[room.key];
@@ -603,11 +599,17 @@ function RoomsComboContent() {
                   </div>
                   <div className="rcp-room-header-right">
                     <div className="rcp-price-block">
-                      <div className="rcp-price-mrp">₹{room.mrpPrice.toLocaleString('en-IN')}</div>
-                      <div className="rcp-price-main">₹{livePrice.toLocaleString('en-IN')}</div>
-                      <div className="rcp-price-night">Per Room / Night</div>
-                      {discountPct > 0 && (
-                        <div className="rcp-price-save">{discountPct}% off MRP</div>
+                      {livePrice > 0 ? (
+                        <>
+                          <div className="rcp-price-mrp">₹{room.mrpPrice.toLocaleString('en-IN')}</div>
+                          <div className="rcp-price-main">₹{livePrice.toLocaleString('en-IN')}</div>
+                          <div className="rcp-price-night">Per Room / Night</div>
+                          {discountPct > 0 && (
+                            <div className="rcp-price-save">{discountPct}% off MRP</div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="rcp-price-main">Check Price</div>
                       )}
                     </div>
                     <div className={`rcp-chevron${isExpanded ? ' open' : ''}`}>
@@ -819,7 +821,7 @@ function RoomsComboContent() {
                       <div key={k} style={{ marginBottom: '8px' }}>
                         <div className="rcp-sel-name">{room.title}</div>
                         <div className="rcp-sel-price" style={{ fontSize: '14px' }}>
-                          ₹{livePrices[room.key].toLocaleString('en-IN')} × {v} room{v > 1 ? 's' : ''}
+                          ₹{(livePrices[room.key] ?? 0).toLocaleString('en-IN')} × {v} room{v > 1 ? 's' : ''}
                         </div>
                       </div>
                     );
@@ -831,7 +833,7 @@ function RoomsComboContent() {
                         .filter(([k, v]) => v > 0)
                         .reduce((sum, [k, v]) => {
                           const r = ROOMS.find(x => x.key === k);
-                          return sum + (r ? livePrices[r.key] * nights * v : 0);
+                          return sum + (r ? (livePrices[r.key] ?? 0) * nights * v : 0);
                         }, 0)
                         .toLocaleString('en-IN')}
                   </strong>

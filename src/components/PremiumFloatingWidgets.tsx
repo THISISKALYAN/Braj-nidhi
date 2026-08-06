@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useMusic } from "@/lib/MusicContext";
+import { useLivePrices } from "@/hooks/useLivePrices";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play,
@@ -158,8 +159,11 @@ interface QualState {
   phone: string;
 }
 
-export default function FloatingWidgets() {
+export default function PremiumFloatingWidgets() {
+  const [activeWidget, setActiveWidget] = useState<string | null>(null);
+  const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const { isPlaying, togglePlay } = useMusic();
+  const { prices } = useLivePrices();
   const [mounted, setMounted] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"home" | "chat" | "explore" | "profile">("home");
@@ -276,15 +280,15 @@ export default function FloatingWidgets() {
     } else if (qualState.step === "phone") {
       const guestNum = parseInt(trimmed.match(/\d+/)?.[0] || "2") || 2;
       let roomName = "Deluxe 2 – Twin Bedded Room";
-      let price = 3500;
+      let price = prices.deluxe2 ?? 0;
       let image = "DSC05818-HDR.webp";
       let features = ["Twin Beds", "AC & High-Speed WiFi", "Hot Water Access", "Divine Sattvic Breakfast"];
 
       if (guestNum === 3) {
-        roomName = "Deluxe 3 – 3 Bedded Room"; price = 4500; image = "d3.webp";
+        roomName = "Deluxe 3 – 3 Bedded Room"; price = prices.deluxe3 ?? 0; image = "d3.webp";
         features = ["Triple Beds", "Temple View Balcony", "Premium Bath Amenities"];
       } else if (guestNum >= 4) {
-        roomName = "Deluxe 4 – 4 Bedded Room"; price = 5500; image = "d31.webp";
+        roomName = "Deluxe 4 – 4 Bedded Room"; price = prices.deluxe4 ?? 0; image = "d31.webp";
         features = ["Grand Suite Lounge", "Spacious Living Room", "Panoramic Views", "VVIP Guest Services"];
       }
 

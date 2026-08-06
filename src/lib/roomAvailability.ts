@@ -19,11 +19,7 @@ export const ROOM_NAMES: Record<RoomType, string> = {
   deluxe4: 'Deluxe 4 – Family Room',
 };
 
-export const ROOM_PRICES: Record<RoomType, number> = {
-  deluxe2: 3500,
-  deluxe3: 4500,
-  deluxe4: 6500,
-};
+
 
 export interface BookingRecord {
   id: string;
@@ -257,7 +253,7 @@ export async function suggestUpgrade(
       return {
         roomType: candidate,
         name: ROOM_NAMES[candidate],
-        price: ROOM_PRICES[candidate],
+        price: 0, // Dynamic pricing is handled by the frontend useLivePrices hook
         available: minAvail,
       };
     }
@@ -585,7 +581,7 @@ export async function syncMultiToERP(bookingsToSync: BookingRecord[]): Promise<{
         rooms: bookingsToSync.map(b => {
           const erpRoomTypeId = resolveErpRoomTypeId(b.roomType);
           const itemAmount = b.totalAmount;
-          const itemRate = itemAmount !== undefined ? Math.round(itemAmount / (b.rooms || 1)) : ROOM_PRICES[b.roomType] || 3500;
+          const itemRate = itemAmount !== undefined ? Math.round(itemAmount / (b.rooms || 1)) : 0;
           return {
             room_type: erpRoomTypeId,
             qty: b.rooms,

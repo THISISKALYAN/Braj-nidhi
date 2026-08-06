@@ -16,7 +16,6 @@
 import { NextRequest } from 'next/server';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 import {
-  FALLBACK_PRICES,
   addDays,
   extractErpPrices,
   resolvePrices,
@@ -56,10 +55,11 @@ export async function GET(req: NextRequest) {
   const rooms = Math.min(20, Math.max(1, Number(params.get('rooms')) || 1));
   const debug = params.get('debug') === '1';
 
-  // Room count and guest count are part of the key: the ERP can quote
-  // differently for a different occupancy or number of rooms held, so reusing a
-  // cached quote across those would show the wrong rate.
-  const cacheKey = `${from}|${to}|${guests}|${rooms}`;
+  // Keyed on the stay dates only. The ERP request below deliberately fixes
+  // guests and rooms at 1 so every room type is returned, so the reply depends
+  // on nothing else — including guests and rooms in the key would just split the
+  // cache into identical copies.
+  const cacheKey = `${from}|${to}`;
   const hit = cache.get(cacheKey);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS && !debug) {
     return Response.json({ ...(hit.body as object), cached: true });
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
 
   if (!ERP_API_KEY || !ERP_API_SECRET) {
     return Response.json({
-      prices: FALLBACK_PRICES,
+      prices: {},
       source: 'fallback',
       reason: 'ERP credentials are not configured on the server.',
       from,
@@ -88,8 +88,16 @@ export async function GET(req: NextRequest) {
         property: process.env.ERP_PROPERTY || 'BRAJ-NIDHI-GUEST-HOUSE-VRN',
         check_in_date: from,
         check_out_date: to,
-        guests,
-        rooms,
+        // This call exists to read the nightly rate of every room type, not to
+        // test whether a particular party fits. The ERP filters availableRooms
+        // by occupancy, so asking for the party's per-room average silently
+        // dropped every type too small to seat it — 7 guests over 2 rooms asked
+        // for 4 per room and returned only Deluxe 4, leaving Deluxe 2 and 3 with
+        // no price and the card showing "Check Price". Asking for the minimum
+        // returns them all; capacity is enforced separately from ROOM_CAPACITY.
+        guests: 1,
+        // Likewise 1 room, so a type with only a single room free is still listed.
+        rooms: 1,
         booking_type: process.env.ERP_BOOKING_TYPE || 'Walk-In',
         hold_type: process.env.ERP_HOLD_TYPE,
       }),
@@ -109,7 +117,7 @@ export async function GET(req: NextRequest) {
     if (!erpResponse.ok) {
       console.warn('[/api/erp/prices] ERP returned HTTP', erpResponse.status);
       return Response.json({
-        prices: FALLBACK_PRICES,
+        prices: {},
         source: 'fallback',
         reason: `ERP responded with HTTP ${erpResponse.status}.`,
         from,
@@ -162,7 +170,7 @@ export async function GET(req: NextRequest) {
     console.warn('[/api/erp/prices] ERP request failed:', message);
 
     return Response.json({
-      prices: FALLBACK_PRICES,
+      prices: {},
       source: 'fallback',
       reason: `Could not reach the ERP: ${message}`,
       from,

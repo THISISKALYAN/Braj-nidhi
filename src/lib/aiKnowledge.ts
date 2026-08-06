@@ -20,7 +20,6 @@ export const BRAJ_NIDHI_KNOWLEDGE = {
     {
       id: "deluxe-2",
       name: "Deluxe 2 – Twin Bedded Room",
-      price: 3500,
       description: "Ideal for 2 Adults. Elegant spiritual aesthetics combined with state-of-the-art modern comforts.",
       features: [
         "1 Ultra-comfortable King Bed",
@@ -35,7 +34,6 @@ export const BRAJ_NIDHI_KNOWLEDGE = {
     {
       id: "deluxe-3",
       name: "Deluxe 3 – 3 Bedded Room",
-      price: 4500,
       description: "Ideal for 2 Adults + 1 Child OR 3 Adults. Spacious layout with a dedicated reading alcove, perfect for small families or close spiritual companions.",
       features: [
         "1 King Bed + 1 Premium Single Daybed",
@@ -50,7 +48,6 @@ export const BRAJ_NIDHI_KNOWLEDGE = {
     {
       id: "deluxe-4",
       name: "Deluxe 4 – 4 Bedded Room",
-      price: 5500,
       description: "Ideal for 3 Adults + 1 Child OR 4 Adults. The ultimate family suite offering palatial space, luxurious furnishings, and a panoramic view of local temple domes.",
       features: [
         "2 Ultra-comfortable King Beds in distinct partitioned areas",

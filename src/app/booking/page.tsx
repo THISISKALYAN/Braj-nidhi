@@ -3,10 +3,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  FALLBACK_PRICES,
   extractErpPrices,
   normalizeRoomKey as normalizeRoomKeyShared,
 } from '@/lib/roomPricing';
+import { useLivePrices } from '@/hooks/useLivePrices';
 import { buildErpRooms } from '@/lib/erpReservation';
 
 /** Set NEXT_PUBLIC_DEBUG_PRICES=1 to trace ERP pricing in the browser console. */
@@ -58,8 +58,10 @@ export default function BookingPage() {
   // Page Steps: 1 = Review, 2 = Payment details, 3 = Confirmation
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   
-  // Room Type Selection
-  const [roomSelections, setRoomSelections] = useState<Record<string, number>>({'deluxe2': 1});
+  // Room Type Selection. Starts empty — rooms come from the search the guest
+  // performed (URL params) or from an explicit choice on this page. Nothing is
+  // preselected, so an unselected room can never be priced or reserved.
+  const [roomSelections, setRoomSelections] = useState<Record<string, number>>({});
   
   // Backwards compatibility for single-room logic in some components
   const roomType = Object.keys(roomSelections).find(k => roomSelections[k] > 0) || 'deluxe2';
@@ -161,11 +163,11 @@ export default function BookingPage() {
   const [apiErrorMsg, setApiErrorMsg] = useState<string>('');
   const [availableRoomsList, setAvailableRoomsList] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [livePrices, setLivePrices] = useState<Record<string, number>>({
-    deluxe2: 3500,
-    deluxe3: 4500,
-    deluxe4: 5500
-  });
+  const { prices: livePrices, isLoading: pricesLoading } = useLivePrices(
+    checkIn, 
+    checkOut, 
+    { guests: adults + children, rooms: Object.values(roomSelections).reduce((a, b) => a + b, 0) || 1 }
+  );
 
   // ── Real-time ERP availability check ───────────────────────────────────────
   const [availMinForRange, setAvailMinForRange] = useState<number | null>(null);
@@ -178,8 +180,21 @@ export default function BookingPage() {
   // needs. Without this, the page would ask about a stay nobody selected and show
   // results unrelated to the guest's actual criteria.
   const guestCount = adults + children;
+
+  /** Rooms the guest actually chose. Zero means nothing is selected. */
+  const selectedRoomTotal = Object.values(roomSelections).reduce(
+    (sum, qty) => sum + (Number(qty) || 0),
+    0,
+  );
+
+  // A room selection is part of the required input: without one there is no
+  // stay to price, quote or reserve, so neither the ERP search nor payment runs.
   const hasRequiredBookingInputs =
-    Boolean(checkIn) && Boolean(checkOut) && checkIn < checkOut && adults >= 1;
+    Boolean(checkIn) &&
+    Boolean(checkOut) &&
+    checkIn < checkOut &&
+    adults >= 1 &&
+    selectedRoomTotal > 0;
 
   useEffect(() => {
     if (!hasRequiredBookingInputs) return;
@@ -255,23 +270,12 @@ export default function BookingPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const requestBadges = ["Late Check-out (2 hrs)", "Spiritual Literature in Room", "Quiet Room", "Extra Bedding", "Temple Prasadam Delivery"];
 
-  // Mapping and the fallback rate card come from src/lib/roomPricing.ts so this
-  // page can't drift from the rest of the site.
   const normalizeRoomKey = normalizeRoomKeyShared;
 
-  /** Rate-card price. Only reached when the ERP priced nothing for the type. */
-  const getRoomPrice = (type: string): number => FALLBACK_PRICES[normalizeRoomKey(type)];
-
-  /**
-   * The nightly rate for a room type — ERP rate when it supplied one, rate card
-   * otherwise. Every price shown on this page and every amount sent to the
-   * gateway or the ERP must come from here, so the summary, the payment and the
-   * reservation can never disagree.
-   */
   const priceFor = (type: string): number => {
     const key = normalizeRoomKey(type);
-    const live = livePrices[key] ?? livePrices[type];
-    return typeof live === 'number' && live > 0 ? live : FALLBACK_PRICES[key];
+    if (!key) return 0;
+    return livePrices[key] ?? 0;
   };
 
   /** Resolved rate for every room type, as the ERP payload builder expects. */
@@ -291,7 +295,7 @@ export default function BookingPage() {
       const id = room?.roomTypeId;
       if (typeof id === 'string' && id) {
         const key = normalizeRoomKey(id);
-        if (!acc[key]) acc[key] = id;
+        if (key && !acc[key]) acc[key] = id;
       }
       return acc;
     },
@@ -531,34 +535,6 @@ export default function BookingPage() {
 
       if (data.availableRooms && Array.isArray(data.availableRooms)) {
         setAvailableRoomsList(data.availableRooms);
-
-        // The ERP is authoritative for nightly rates. extractErpPrices maps each
-        // returned room onto a website type and keeps its pricePerNight; types the
-        // ERP doesn't price keep their rate-card figure rather than becoming zero.
-        const { prices: erpPrices, trace } = extractErpPrices(data.availableRooms);
-
-        if (DEBUG_PRICES) {
-          console.groupCollapsed(
-            `%c[booking prices] ${currentCheckIn} → ${currentCheckOut}`,
-            `color:${Object.keys(erpPrices).length ? '#16a34a' : '#dc2626'};font-weight:bold`,
-          );
-          console.log('1. ERP availableRooms :', data.availableRooms);
-          console.log('2. erpPrices extracted:', erpPrices);
-          console.log('   mapping trace      :', trace);
-          if (Object.keys(erpPrices).length === 0) {
-            console.warn(
-              'ERP supplied no usable rates — the rate card will show. ' +
-                'availableRooms length:', data.availableRooms.length,
-            );
-          }
-          console.groupEnd();
-        }
-
-        setLivePrices(prev => {
-          const next = { ...prev, ...erpPrices };
-          if (DEBUG_PRICES) console.log('3. livePrices stored  :', next);
-          return next;
-        });
       }
     } catch (err: any) {
       console.warn('ERP searchRoomsApi error:', err.message || err);
@@ -2439,7 +2415,7 @@ export default function BookingPage() {
         }
         .booking-page-mmt .footer-top-links {
           display: grid !important;
-          grid-template-columns: repeat(5, 1fr) !important;
+          grid-template-columns: repeat(6, 1fr) !important;
           gap: 30px !important;
           margin: 0 auto 80px auto !important;
           max-width: 1400px !important;
@@ -2488,35 +2464,13 @@ export default function BookingPage() {
         .booking-page-mmt .site-footer .footer-middle-bar a:hover {
           color: #2563eb !important;
         }
-        .booking-page-mmt .footer-massive-text {
-          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
-          font-size: 14.5vw !important;
-          font-weight: 900 !important;
-          line-height: 0.75 !important;
-          text-transform: uppercase !important;
-          text-align: center !important;
-          background: url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920') center 60% / cover !important;
-          -webkit-background-clip: text !important;
-          background-clip: text !important;
-          -webkit-text-fill-color: transparent !important;
-          color: transparent !important;
-          padding-top: 40px !important;
-          white-space: nowrap !important;
-          overflow: hidden !important;
-          letter-spacing: -0.06em !important;
-          width: 100% !important;
-          user-select: none !important;
-        }
+
         @media (max-width: 992px) {
           .booking-page-mmt .footer-top-links {
             grid-template-columns: repeat(3, 1fr) !important;
             gap: 40px !important;
           }
-          .booking-page-mmt .footer-massive-text {
-            font-size: 15vw !important;
-            padding-top: 30px !important;
-            letter-spacing: -0.05em !important;
-          }
+
         }
         @media (max-width: 600px) {
           .booking-page-mmt .footer-top-links {
@@ -2838,7 +2792,11 @@ export default function BookingPage() {
                 {/* Room type row */}
                 <div style={{ background: '#f9fafb', borderRadius: '10px', padding: '14px 16px' }}>
                   <div style={{ fontSize: '15px', fontWeight: '700', color: '#111', marginBottom: '8px' }}>
-                    {adults + children} x {getRoomTitle(roomType)}
+                    {Object.entries(roomSelections).filter(([_, qty]) => qty > 0).map(([rt, qty], idx) => (
+                      <div key={rt} style={{ marginBottom: idx > 0 ? '4px' : '0' }}>
+                        {qty} x {getRoomTitle(rt)}
+                      </div>
+                    ))}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', marginBottom: '10px' }}>
                     <span style={{ fontSize: '12px', color: '#374151' }}>• Room Only</span>
@@ -2945,7 +2903,7 @@ export default function BookingPage() {
                         <h4>Deluxe 2 – Twin Bedded Room</h4>
                         <p>Ideal for 2 Adults</p>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                          <span className="price-tag">₹{livePrices.deluxe2.toLocaleString()}<span style={{ fontSize: '12px', fontWeight: 'normal', color: 'rgba(44, 37, 32, 0.5)' }}> / night</span></span>
+                          <span className="price-tag">₹{(livePrices.deluxe2 ?? 0).toLocaleString()}<span style={{ fontSize: '12px', fontWeight: 'normal', color: 'rgba(44, 37, 32, 0.5)' }}> / night</span></span>
                           {!available && (
                             <span className="badge-pill-mmt accent" style={{ background: 'rgba(200, 155, 60, 0.08)', borderColor: 'rgba(200, 155, 60, 0.25)', color: '#C89B3C', fontSize: '10px', fontWeight: '800' }}>Sold Out on ERP</span>
                           )}
@@ -2971,7 +2929,7 @@ export default function BookingPage() {
                         <h4>Deluxe 3 – 3 Bedded Room</h4>
                         <p>Ideal for 2 Adults + 1 Child OR 3 Adults</p>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                          <span className="price-tag">₹{livePrices.deluxe3.toLocaleString()}<span style={{ fontSize: '12px', fontWeight: 'normal', color: 'rgba(44, 37, 32, 0.5)' }}> / night</span></span>
+                          <span className="price-tag">₹{(livePrices.deluxe3 ?? 0).toLocaleString()}<span style={{ fontSize: '12px', fontWeight: 'normal', color: 'rgba(44, 37, 32, 0.5)' }}> / night</span></span>
                           {!available && (
                             <span className="badge-pill-mmt accent" style={{ background: 'rgba(200, 155, 60, 0.08)', borderColor: 'rgba(200, 155, 60, 0.25)', color: '#C89B3C', fontSize: '10px', fontWeight: '800' }}>Sold Out on ERP</span>
                           )}
@@ -2997,7 +2955,7 @@ export default function BookingPage() {
                         <h4>Deluxe 4 – 4 Bedded Room</h4>
                         <p>Ideal for 3 Adults + 1 Child OR 4 Adults</p>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                          <span className="price-tag">₹{livePrices.deluxe4.toLocaleString()}<span style={{ fontSize: '12px', fontWeight: 'normal', color: 'rgba(44, 37, 32, 0.5)' }}> / night</span></span>
+                          <span className="price-tag">₹{(livePrices.deluxe4 ?? 0).toLocaleString()}<span style={{ fontSize: '12px', fontWeight: 'normal', color: 'rgba(44, 37, 32, 0.5)' }}> / night</span></span>
                           {!available && (
                             <span className="badge-pill-mmt accent" style={{ background: 'rgba(200, 155, 60, 0.08)', borderColor: 'rgba(200, 155, 60, 0.25)', color: '#C89B3C', fontSize: '10px', fontWeight: '800' }}>Sold Out on ERP</span>
                           )}
@@ -3175,7 +3133,9 @@ export default function BookingPage() {
                 )}
                 {!hasRequiredBookingInputs && (
                   <div style={{ color: '#ef4444', fontSize: '12px', marginBottom: '16px', fontWeight: '500', paddingLeft: '25px' }}>
-                    Please select your check-in date, check-out date, and number of guests to check room availability.
+                    {selectedRoomTotal === 0
+                      ? 'Please select at least one room before searching.'
+                      : 'Please select your check-in date, check-out date, and number of guests to check room availability.'}
                   </div>
                 )}
                 {(() => {
@@ -3872,11 +3832,43 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
 
       <footer className="site-footer">
         <div className="footer-top-links">
-          <div className="footer-col"><h3>Our Services</h3><Link href="/guesthouse">Guesthouse</Link><Link href="/weddings">Weddings</Link><Link href="/corporate">Corporate</Link><Link href="/braj-yatra">Braj Yatra</Link></div>
-          <div className="footer-col"><h3>Explore Vrindavan</h3><Link href="/braj-yatra#packages">Sapt Devalaya Yatra</Link><Link href="/braj-yatra#packages">Chaurasi Kos Yatra</Link><Link href="/braj-yatra">Govardhan Parikrama</Link><Link href="/braj-yatra">Barsana & Nandgaon</Link><a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer">Chandrodaya Mandir</a><a href="https://www.vhtofficial.com/" target="_blank" rel="noopener noreferrer">Heritage Tower</a></div>
-          <div className="footer-col"><h3>Stay & Book</h3><Link href="/booking">Book Your Stay</Link><Link href="/weddings">Wedding Packages</Link><Link href="/corporate">Corporate Stays</Link><Link href="/cancellation-policy">Refund Policy</Link></div>
-          <div className="footer-col"><h3>Help & Support</h3><a href="#">FAQ</a><Link href="/contact">Contact Us</Link><a href="#">Direction Map</a><a href="#">Group Inquiries</a></div>
-          <div className="footer-col"><h3>Information</h3><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link><Link href="/guest-policy">Guest Policy</Link><Link href="/cancellation-policy">Cancellation Policy</Link></div>
+            <div className="footer-col">
+                <h3>Our Services</h3>
+                <a href="/guesthouse">Guesthouse</a>
+                <a href="/weddings">Weddings</a>
+                <a href="/corporate">Corporate</a>
+                <a href="/braj-yatra">Braj Yatra</a>
+            </div>
+            <div className="footer-col">
+                <h3>Explore Vrindavan</h3>
+                <a href="/braj-yatra#packages">Sapt Devalaya Yatra</a>
+                <a href="/braj-yatra#packages">Chaurasi Kos Yatra</a>
+                <a href="/braj-yatra">Govardhan Parikrama</a>
+                <a href="/braj-yatra">Barsana & Nandgaon</a>
+                            <a href="https://vcm.org.in/" target="_blank" rel="noopener noreferrer">Chandrodaya Mandir</a>
+                <a href="https://www.vhtofficial.com/" target="_blank" rel="noopener noreferrer">Heritage Tower</a>
+</div>
+            <div className="footer-col">
+                <h3>Stay & Book</h3>
+                <a href="/booking">Book Your Stay</a>
+                <a href="/weddings">Wedding Packages</a>
+                <a href="/corporate">Corporate Stays</a>
+                <Link href="/cancellation-policy">Refund Policy</Link>
+            </div>
+            <div className="footer-col">
+                <h3>Help & Support</h3>
+                <a href="#">FAQ</a>
+                <a href="/contact">Contact Us</a>
+                <a href="#">Direction Map</a>
+                <a href="#">Group Inquiries</a>
+            </div>
+            <div className="footer-col">
+                <h3>Information</h3>
+                <Link href="/privacy">Privacy Policy</Link>
+                <Link href="/terms">Terms of Service</Link>
+                <Link href="/guest-policy">Guest Policy</Link>
+                <Link href="/cancellation-policy">Cancellation Policy</Link>
+            </div>
                         <div className="footer-col">
                 <h3>Follow Us</h3>
                 <a href="https://wa.me/917037794300" target="_blank" rel="noopener noreferrer">WhatsApp</a>
@@ -3884,13 +3876,16 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
                 <a href="https://www.instagram.com/braj.nidhi_/" target="_blank" rel="noopener noreferrer">Instagram</a>
             </div>
         </div>
-
+        
         <div className="footer-middle-bar">
-          <Link href="/privacy">Privacy Policy</Link>
-          <span>Copyright &copy; BRAJNIDHI {new Date().getFullYear()}</span>
-          <Link href="/terms">Terms Of Use</Link>
+            <Link href="/privacy">Privacy Policy</Link>
+            <span>Copyright &copy; BRAJNIDHI {new Date().getFullYear()}</span>
+            <Link href="/terms">Terms Of Use</Link>
         </div>
-        <div className="footer-massive-text">BRAJNIDHI</div>
+
+        <div className="footer-massive-text">
+            BRAJNIDHI
+        </div>
       </footer>
 
       <FloatingWidgets />

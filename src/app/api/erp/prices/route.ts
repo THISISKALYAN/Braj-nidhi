@@ -53,9 +53,13 @@ export async function GET(req: NextRequest) {
   const to = DATE_RE.test(rawTo) && rawTo > from ? rawTo : addDays(from, 1);
 
   const guests = Math.min(20, Math.max(1, Number(params.get('guests')) || 2));
+  const rooms = Math.min(20, Math.max(1, Number(params.get('rooms')) || 1));
   const debug = params.get('debug') === '1';
 
-  const cacheKey = `${from}|${to}|${guests}`;
+  // Room count and guest count are part of the key: the ERP can quote
+  // differently for a different occupancy or number of rooms held, so reusing a
+  // cached quote across those would show the wrong rate.
+  const cacheKey = `${from}|${to}|${guests}|${rooms}`;
   const hit = cache.get(cacheKey);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS && !debug) {
     return Response.json({ ...(hit.body as object), cached: true });
@@ -68,6 +72,8 @@ export async function GET(req: NextRequest) {
       reason: 'ERP credentials are not configured on the server.',
       from,
       to,
+      guests,
+      rooms,
     });
   }
 
@@ -83,7 +89,7 @@ export async function GET(req: NextRequest) {
         check_in_date: from,
         check_out_date: to,
         guests,
-        rooms: 1,
+        rooms,
         booking_type: process.env.ERP_BOOKING_TYPE || 'Walk-In',
         hold_type: process.env.ERP_HOLD_TYPE,
       }),
@@ -108,6 +114,8 @@ export async function GET(req: NextRequest) {
         reason: `ERP responded with HTTP ${erpResponse.status}.`,
         from,
         to,
+        guests,
+        rooms,
         diagnostics: debug ? { erpResponse: payload } : undefined,
       });
     }
@@ -136,6 +144,7 @@ export async function GET(req: NextRequest) {
       from,
       to,
       guests,
+      rooms,
       diagnostics: {
         erpRoomCount: Array.isArray(availableRooms) ? availableRooms.length : null,
         unavailableRoomCount: Array.isArray(payload.unavailableRooms)
@@ -158,6 +167,8 @@ export async function GET(req: NextRequest) {
       reason: `Could not reach the ERP: ${message}`,
       from,
       to,
+      guests,
+      rooms,
     });
   }
 }

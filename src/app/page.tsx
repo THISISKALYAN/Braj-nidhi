@@ -227,12 +227,31 @@ export default function Home() {
     eventType: 'Corporate Offsite'
   });
 
-  // Nightly rates from the ERP. Once the guest picks dates in the hero search
-  // widget the lookup follows them, so cards show the rate for that stay.
+  // Total rooms and guests currently chosen in the hero "Rooms & Guests" panel.
+  // Derived rather than stored so they can never fall out of step with the
+  // room counts the guest actually picked.
+  const selectedRoomCount =
+    bookingData.roomCounts.deluxe2 +
+    bookingData.roomCounts.deluxe3 +
+    bookingData.roomCounts.deluxe4;
+  const selectedGuestCount =
+    bookingData.roomCounts.deluxe2 * 2 +
+    bookingData.roomCounts.deluxe3 * 3 +
+    bookingData.roomCounts.deluxe4 * 4;
+
+  /**
+   * Nightly rates from the ERP for the stay currently configured in the hero
+   * widget. Dates, guest count and room count are all inputs, so changing any
+   * of them re-quotes immediately instead of reusing the previous rate.
+   */
   const { prices: livePrices } = useLivePrices(
     bookingData.checkIn,
     bookingData.checkOut,
-    { pollMs: 60_000 },
+    {
+      guests: Math.max(1, selectedGuestCount),
+      rooms: Math.max(1, selectedRoomCount),
+      pollMs: 60_000,
+    },
   );
 
   const [tempRoomCounts, setTempRoomCounts] = useState({

@@ -48,7 +48,7 @@ const DEBUG = process.env.NEXT_PUBLIC_DEBUG_PRICES === '1';
 export function useLivePrices(
   checkIn?: string,
   checkOut?: string,
-  options?: { guests?: number; pollMs?: number },
+  options?: { guests?: number; rooms?: number; pollMs?: number },
 ): UseLivePricesResult {
   const [prices, setPrices] = useState<Record<RoomKey, number>>(FALLBACK_PRICES);
   const [livePriced, setLivePriced] = useState<RoomKey[]>([]);
@@ -58,6 +58,7 @@ export function useLivePrices(
   const [tick, setTick] = useState(0);
 
   const guests = options?.guests;
+  const rooms = options?.rooms;
   const pollMs = options?.pollMs;
 
   const refresh = useCallback(() => setTick(t => t + 1), []);
@@ -73,7 +74,11 @@ export function useLivePrices(
         params.set('from', checkIn);
         params.set('to', checkOut);
       }
+      // Guests and room count both go to the ERP: its rates can depend on
+      // occupancy and on how many rooms are being held, so a change to either
+      // must produce a fresh quote rather than reuse the previous one.
       if (guests) params.set('guests', String(guests));
+      if (rooms) params.set('rooms', String(rooms));
 
       try {
         const res = await fetch(`/api/erp/prices?${params}`);
@@ -119,7 +124,7 @@ export function useLivePrices(
       cancelled = true;
       clearInterval(id);
     };
-  }, [checkIn, checkOut, guests, pollMs, tick]);
+  }, [checkIn, checkOut, guests, rooms, pollMs, tick]);
 
   const isLive = useCallback(
     (key: RoomKey) => livePriced.includes(key),

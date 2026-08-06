@@ -71,14 +71,15 @@ export default function RoomBookingModal({ isOpen, onClose, roomType, roomName, 
   const [showGuests, setShowGuests] = useState(false);
 
   /**
-   * Re-price for the dates chosen inside this modal. The `price` prop is only
-   * the rate for the day the modal was opened; ERP rates vary by date, so once
-   * the guest picks a stay we look up that stay's rate instead.
+   * Re-price for what the guest selects inside this modal. The `price` prop is
+   * only the rate for the day the modal was opened; ERP rates vary by date,
+   * occupancy and room count, so dates, guests and rooms are all inputs here
+   * and any change re-quotes.
    */
   const { prices: livePrices, isLoading: pricesLoading } = useLivePrices(
     checkIn,
     checkOut,
-    { guests: adults + children },
+    { guests: adults + children, rooms },
   );
   const effectivePrice = livePrices[roomType] ?? price;
 

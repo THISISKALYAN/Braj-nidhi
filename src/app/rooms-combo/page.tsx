@@ -96,14 +96,6 @@ function RoomsComboContent() {
   const nights     = getNights(checkIn, checkOut);
   const totalGuests = adults + children;
 
-  // Nightly rates come from the ERP for the guest's dates (today's rate before
-  // dates are chosen), falling back to the rate card only per room type that the
-  // ERP does not price. Polls so a same-day rate change reaches the page.
-  const { prices: livePrices } = useLivePrices(checkIn, checkOut, {
-    guests: totalGuests,
-    pollMs: 60_000,
-  });
-
   const [roomSelections, setRoomSelections] = useState<Record<string, number>>(() => {
     const init: Record<string, number> = {};
     ['deluxe2', 'deluxe3', 'deluxe4'].forEach(key => {
@@ -133,6 +125,19 @@ function RoomsComboContent() {
     return sum + (room ? room.maxGuests * v : 0);
   }, 0);
   const displayGuestsCount = selectedRoomsCount > 0 ? selectedMaxGuests : totalGuests;
+
+  /**
+   * Nightly rates from the ERP for the dates, guest count and room count
+   * currently selected — declared after the selection totals so adjusting room
+   * quantities re-quotes straight away rather than reusing the earlier rate.
+   * Before dates are picked the server quotes today's rate.
+   */
+  const { prices: livePrices } = useLivePrices(checkIn, checkOut, {
+    guests: Math.max(1, displayGuestsCount),
+    rooms: Math.max(1, displayRoomsCount),
+    pollMs: 60_000,
+  });
+
   const [expandedRoom, setExpandedRoom] = useState<string | null>('deluxe2');
   const [scrolled, setScrolled] = useState(false);
   const [cameFromGuesthouse, setCameFromGuesthouse] = useState(false);

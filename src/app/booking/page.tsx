@@ -486,7 +486,12 @@ export default function BookingPage() {
   }, []);
 
   // Helper to fetch live rooms search from ERP
-  const searchRoomsApi = async (currentCheckIn: string, currentCheckOut: string, guestCount: number) => {
+  const searchRoomsApi = async (
+    currentCheckIn: string,
+    currentCheckOut: string,
+    guestCount: number,
+    roomCount: number = 1,
+  ) => {
     try {
       setIsSearching(true);
       setApiErrorMsg('');
@@ -499,7 +504,9 @@ export default function BookingPage() {
           check_in_date: currentCheckIn,
           check_out_date: currentCheckOut,
           guests: guestCount,
-          rooms: 1,
+          // The ERP can quote differently depending on how many rooms are being
+          // held, so send the real selection rather than a fixed 1.
+          rooms: Math.max(1, roomCount),
           booking_type: "Walk-In",
           hold_type: "BN-BN-VCM Web Site-0001-0001"
         })
@@ -576,16 +583,18 @@ export default function BookingPage() {
     return availableRoomsList.some((room: any) => erpToWebsiteType(room.roomTypeId) === type);
   };
 
-  // Trigger API search rooms once the guest's dates + guest count are known, then
-  // poll every 20s. Nothing is requested — and no poll is scheduled — until then.
+  // Re-quote whenever the stay changes — dates, guest count or room count — then
+  // poll every 20s. `rooms` is in the dependency list so adjusting the room
+  // quantities fetches fresh ERP rates instead of keeping the previous ones.
+  // Nothing is requested, and no poll scheduled, until the inputs are complete.
   useEffect(() => {
     if (!hasRequiredBookingInputs) return;
-    searchRoomsApi(checkIn, checkOut, guestCount);
+    searchRoomsApi(checkIn, checkOut, guestCount, rooms);
     const id = setInterval(() => {
-      searchRoomsApi(checkIn, checkOut, guestCount);
+      searchRoomsApi(checkIn, checkOut, guestCount, rooms);
     }, 20_000);
     return () => clearInterval(id);
-  }, [checkIn, checkOut, guestCount, hasRequiredBookingInputs]);
+  }, [checkIn, checkOut, guestCount, rooms, hasRequiredBookingInputs]);
 
 
   const handleRequestBadgeToggle = (badge: string) => {
@@ -2904,7 +2913,7 @@ export default function BookingPage() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button 
-                      onClick={() => searchRoomsApi(checkIn, checkOut, adults + children)}
+                      onClick={() => searchRoomsApi(checkIn, checkOut, adults + children, rooms)}
                       className="btn-apply-promo"
                       disabled={isSearching || !checkIn || !checkOut}
                       style={{ padding: '6px 12px', fontSize: '12px', margin: 0 }}

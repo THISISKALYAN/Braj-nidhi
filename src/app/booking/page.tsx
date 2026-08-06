@@ -7,6 +7,7 @@ import {
   extractErpPrices,
   normalizeRoomKey as normalizeRoomKeyShared,
 } from '@/lib/roomPricing';
+import { buildErpRooms } from '@/lib/erpReservation';
 
 /** Set NEXT_PUBLIC_DEBUG_PRICES=1 to trace ERP pricing in the browser console. */
 const DEBUG_PRICES = process.env.NEXT_PUBLIC_DEBUG_PRICES === '1';
@@ -261,6 +262,42 @@ export default function BookingPage() {
   /** Rate-card price. Only reached when the ERP priced nothing for the type. */
   const getRoomPrice = (type: string): number => FALLBACK_PRICES[normalizeRoomKey(type)];
 
+  /**
+   * The nightly rate for a room type — ERP rate when it supplied one, rate card
+   * otherwise. Every price shown on this page and every amount sent to the
+   * gateway or the ERP must come from here, so the summary, the payment and the
+   * reservation can never disagree.
+   */
+  const priceFor = (type: string): number => {
+    const key = normalizeRoomKey(type);
+    const live = livePrices[key] ?? livePrices[type];
+    return typeof live === 'number' && live > 0 ? live : FALLBACK_PRICES[key];
+  };
+
+  /** Resolved rate for every room type, as the ERP payload builder expects. */
+  const resolvedPrices = {
+    deluxe2: priceFor('deluxe2'),
+    deluxe3: priceFor('deluxe3'),
+    deluxe4: priceFor('deluxe4'),
+  };
+
+  /**
+   * Room-type document IDs exactly as search_rooms returned them, so the
+   * reservation references the ERP's own IDs rather than our assumed ones.
+   * Falls back to the canonical IDs for any type the ERP didn't list.
+   */
+  const liveErpRoomTypeIds = availableRoomsList.reduce<Record<string, string>>(
+    (acc, room: any) => {
+      const id = room?.roomTypeId;
+      if (typeof id === 'string' && id) {
+        const key = normalizeRoomKey(id);
+        if (!acc[key]) acc[key] = id;
+      }
+      return acc;
+    },
+    {},
+  );
+
   const getRoomTitle = (type: string): string => {
     switch (normalizeRoomKey(type)) {
       case 'deluxe3': return "Deluxe 3 – 3 Bedded Room";
@@ -298,11 +335,22 @@ export default function BookingPage() {
 
   // Price calculations - displayed prices are GST-inclusive (5%)
   const gstRate = 0.05;
-  const roomCost = Object.entries(roomSelections).reduce((sum, [type, count]) => {
-    const price = livePrices[type] || getRoomPrice(type);
-    return sum + (price * nights * count);
-  }, 0);
-  const pricePerNight = livePrices[roomType] || getRoomPrice(roomType);
+  // Built by the same helper that produces the ERP payload, so the displayed
+  // subtotal, the gateway amount and the reservation cannot drift apart. This
+  // previously used an un-normalized key lookup, which is why multi-room totals
+  // could disagree with the per-room prices shown alongside them.
+  const erpRooms = buildErpRooms({
+    roomSelections,
+    prices: resolvedPrices,
+    nights,
+    adults,
+    children,
+    gstRate,
+    erpRoomTypeIds: liveErpRoomTypeIds,
+  });
+
+  const roomCost = erpRooms.roomsSubtotal;
+  const pricePerNight = priceFor(roomType);
 
   // Add-ons Cost
   const darshanCost = darshanGuide ? 1500 : 0;
@@ -658,17 +706,9 @@ export default function BookingPage() {
     const tempOrderRef = 'PAY-REQ-' + Math.floor(100000 + Math.random() * 900000);
     const amount = payableTotal;
 
-    // Always use the canonical ERP room type IDs — override with live ERP value if available
-    const erpRoomTypeMap: Record<string, string> = {
-      deluxe2: 'BN-DELUXE-2',
-      deluxe3: 'BN-DELUXE-3',
-      deluxe4: 'BN-DELUXE-4',
-    };
-    let targetRoomType = erpRoomTypeMap[roomType] || 'BN-DELUXE-2';
-    if (availableRoomsList.length > 0) {
-      const found = availableRoomsList.find((r: any) => erpToWebsiteType(r.roomTypeId) === roomType);
-      if (found?.roomTypeId) targetRoomType = found.roomTypeId;
-    }
+    // Room-type IDs are resolved once, in erpRooms, using the IDs search_rooms
+    // actually returned where available (see liveErpRoomTypeIds) and the
+    // canonical ERP IDs otherwise.
 
     // Load Razorpay and open checkout
     try {
@@ -743,25 +783,13 @@ export default function BookingPage() {
                   email: guestDetails.email,
                   phone: guestDetails.phone,
                 },
-                rooms: Object.entries(roomSelections).filter(([_, qty]) => qty > 0).map(([rt, qty]) => {
-                  const normKey = normalizeRoomKey(rt);
-                  const roomPrice = livePrices[normKey] || livePrices[rt] || getRoomPrice(normKey);
-                  const roomTotal = roomPrice * nights * qty;
-                  const roomTaxable = Math.round(roomTotal / (1 + gstRate));
-                  const roomGst = roomTotal - roomTaxable;
-                  return {
-                    room_type: erpRoomTypeMap[normKey] || 'BN-DELUXE-2',
-                    qty,
-                    rate: roomPrice,
-                    amount: roomTotal,
-                    taxable_amount: roomTaxable,
-                    gst_amount: roomGst,
-                    gst_rate: 5,
-                    tax_rate: 5,
-                    adults: Math.max(1, Math.floor(adults / rooms)),
-                    children: Math.floor(children / rooms)
-                  };
-                }),
+                // Same rows the fare summary was rendered from. buildErpRooms
+                // merges duplicate types, distributes guests so the per-row
+                // totals add up to the real headcount (the old
+                // Math.floor(adults / rooms) dropped guests on every
+                // multi-room booking), and keeps each row's tax split
+                // reconciling to the subtotal.
+                rooms: erpRooms.rooms,
                 additional_guests: additionalGuestsPayload,
                 gateway_payment_id: response.razorpay_payment_id,
                 gateway_order_id: response.razorpay_order_id,
@@ -2656,7 +2684,7 @@ export default function BookingPage() {
                       <div key={rt} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{count}x {getRoomTitle(rt).split(' – ')[0]}</div>
-                          <div style={{ fontSize: '10px', color: '#6B7280' }}>₹{(livePrices[normalizeRoomKey(rt)] || livePrices[rt] || getRoomPrice(rt)).toLocaleString('en-IN')} / night</div>
+                          <div style={{ fontSize: '10px', color: '#6B7280' }}>₹{priceFor(rt).toLocaleString('en-IN')} / night</div>
                         </div>
                         <img loading="lazy" decoding="async" src={getRoomImage(rt)} alt={rt} style={{ width: '54px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #e5e7eb' }} />
                       </div>
@@ -3284,8 +3312,7 @@ export default function BookingPage() {
                       Room Charges
                     </div>
                     {Object.entries(roomSelections).filter(([_, count]) => count > 0).map(([rt, count]) => {
-                      const normKey = normalizeRoomKey(rt);
-                      const price = livePrices[normKey] || livePrices[rt] || getRoomPrice(rt);
+                      const price = priceFor(rt);
                       return (
                         <div key={rt} style={{ marginBottom: '8px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151', marginBottom: 4 }}>
@@ -3499,7 +3526,7 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
                       <div className="conf-price-row">
                         <div className="conf-price-tag">
                           <MapPin size={13} style={{ color: '#C89B3C' }} />
-                          ₹{(livePrices[normalizeRoomKey(rt)] || livePrices[rt] || getRoomPrice(rt)).toLocaleString()} / night
+                          ₹{priceFor(rt).toLocaleString()} / night
                         </div>
                         <div className="conf-ref-badge"><Check size={10} />{bookingRef}</div>
                       </div>
@@ -3647,8 +3674,7 @@ Total Paid: Rs.${payableTotal.toLocaleString()}`);
                   items={
                     Object.entries(roomSelections).filter(([_, qty]) => qty > 0).length > 0
                       ? Object.entries(roomSelections).filter(([_, qty]) => qty > 0).map(([rt, qty]) => {
-                          const normKey = normalizeRoomKey(rt);
-                          const roomPrice = livePrices[normKey] || livePrices[rt] || getRoomPrice(normKey);
+                          const roomPrice = priceFor(rt);
                           return {
                             name: getRoomTitle(rt),
                             subtitle: `${qty} Room${qty > 1 ? 's' : ''} × ${nights} Night${nights > 1 ? 's' : ''}`,

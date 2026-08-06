@@ -28,6 +28,20 @@ export const ROOM_TITLES: Record<RoomKey, string> = {
   deluxe4: 'Deluxe 4 – 4 Bedded Room',
 };
 
+/** Maximum occupants per single room of each type. */
+export const ROOM_CAPACITY: Record<RoomKey, number> = {
+  deluxe2: 2,
+  deluxe3: 3,
+  deluxe4: 4,
+};
+
+/** ERP room-type document IDs, keyed by website room type. */
+export const ERP_ROOM_TYPE_IDS: Record<RoomKey, string> = {
+  deluxe2: 'BN-DELUXE-2',
+  deluxe3: 'BN-DELUXE-3',
+  deluxe4: 'BN-DELUXE-4',
+};
+
 /**
  * Map an arbitrary ERP room-type identifier onto a website room key.
  *

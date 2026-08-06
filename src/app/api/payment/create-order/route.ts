@@ -9,9 +9,15 @@ function getRazorpay() {
   return new Razorpay({ key_id: keyId, key_secret: keySecret });
 }
 
-// Min ₹100, Max ₹5,00,000 per order
-const MIN_AMOUNT = 100;
-const MAX_AMOUNT = 500_000;
+/**
+ * Accepted order amount range, in rupees.
+ *
+ * Narrowed to ₹1–₹100 for live payment-gateway testing. Note this is below the
+ * real tariff, so any genuine booking (₹3,500+ per night) is rejected while this
+ * window is in force — widen MAX_AMOUNT again before taking real bookings.
+ */
+const MIN_AMOUNT = 1;
+const MAX_AMOUNT = 100;
 
 export async function POST(request: NextRequest) {
   // ── Rate limit: 5 orders/min per IP ─────────────────────────────────────────
@@ -27,7 +33,7 @@ export async function POST(request: NextRequest) {
     const parsedAmount = Number(amount);
     if (!amount || isNaN(parsedAmount) || parsedAmount < MIN_AMOUNT || parsedAmount > MAX_AMOUNT) {
       return Response.json(
-        { error: `Invalid amount. Must be between ₹${MIN_AMOUNT} and ₹${MAX_AMOUNT}` },
+        { error: `Invalid amount. Must be between ₹${MIN_AMOUNT} and ₹${MAX_AMOUNT}.` },
         { status: 400 },
       );
     }

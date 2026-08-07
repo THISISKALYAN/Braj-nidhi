@@ -160,24 +160,25 @@ export function buildErpRooms(input: BuildRoomsInput): BuildRoomsResult {
     return { key, qty, rate, amount: rate * safeNights * qty };
   });
 
-  const roomsSubtotal = amounts.reduce((sum, row) => sum + row.amount, 0);
-  const taxableTotal = Math.round(roomsSubtotal / (1 + gstRate));
-  const gstTotal = roomsSubtotal - taxableTotal;
-  const taxablePerRow = distributeExact(
-    taxableTotal,
+  const taxableTotal = amounts.reduce((sum, row) => sum + row.amount, 0);
+  const gstTotal = Math.round(taxableTotal * gstRate);
+  const roomsSubtotal = taxableTotal + gstTotal;
+  const gstPerRow = distributeExact(
+    gstTotal,
     amounts.map(row => row.amount),
   );
 
   const rooms: ErpRoomRow[] = amounts.map((row, index) => {
-    const taxable = taxablePerRow[index];
+    const taxable = row.amount;
+    const gst_amount = gstPerRow[index];
     return {
       room_type:
         input.erpRoomTypeIds?.[row.key] ?? ERP_ROOM_TYPE_IDS[row.key],
       qty: row.qty,
       rate: row.rate,
-      amount: row.amount,
+      amount: taxable + gst_amount,
       taxable_amount: taxable,
-      gst_amount: row.amount - taxable,
+      gst_amount: gst_amount,
       gst_rate: GST_RATE_PERCENTAGE,
       tax_rate: GST_RATE_PERCENTAGE,
       adults: adultsPerRow[index],

@@ -547,8 +547,9 @@ function RoomsComboContent() {
           <div className="rcp-rooms-label">Available Rooms & Suites — Select to Continue</div>
 
           {ROOMS.map((room) => {
-            // ERP rate when it has one for these dates
-            const livePrice = livePrices[room.key] ?? 0;
+            // ERP rate is Base Price, so add GST for display
+            const basePrice = livePrices[room.key] ?? 0;
+            const livePrice = basePrice > 0 ? Math.round(basePrice * (1 + (GST_RATE_PERCENTAGE / 100))) : 0;
             const discountPct = livePrice > 0 ? Math.round((1 - livePrice / room.mrpPrice) * 100) : 0;
             const isExpanded  = expandedRoom === room.key;
             const isSelected  = (roomSelections[room.key] || 0) > 0;

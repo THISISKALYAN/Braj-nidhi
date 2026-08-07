@@ -354,6 +354,7 @@ export default function BookingPage() {
     erpRoomTypeIds: liveErpRoomTypeIds,
   });
 
+  const baseRoomCost = erpRooms.taxableTotal;
   const roomCost = erpRooms.roomsSubtotal;
   const pricePerNight = priceFor(roomType);
 
@@ -363,10 +364,10 @@ export default function BookingPage() {
 
   // Discounts
   const memberDiscount = 0;
-  const totalInclGst = roomCost + darshanCost + cabCost - memberDiscount;
-  const taxableAmount = Math.round(totalInclGst / (1 + gstRate));
-  const gstAmount = totalInclGst - taxableAmount;
-  const finalTotal = totalInclGst;
+  
+  const taxableAmount = baseRoomCost + darshanCost + cabCost - memberDiscount;
+  const gstAmount = Math.round(taxableAmount * gstRate);
+  const finalTotal = taxableAmount + gstAmount;
 
   // Dynamic ERP total override
   const payableTotal = erpAmount !== null ? erpAmount : finalTotal;

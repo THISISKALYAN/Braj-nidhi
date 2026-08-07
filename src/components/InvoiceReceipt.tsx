@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Mail, Phone, Globe } from 'lucide-react';
+import { GST_RATE_PERCENTAGE } from '@/config/taxes';
 
 export interface InvoiceItem {
   name: string;
@@ -187,7 +188,7 @@ export default function InvoiceReceipt({
             <span>₹{subtotal.toLocaleString('en-IN')}</span>
           </div>
           <div className="inv-total-row">
-            <span>GST (5% Included)</span>
+            <span>GST ({GST_RATE_PERCENTAGE}% Included)</span>
             <span>₹{tax.toLocaleString('en-IN')}</span>
           </div>
           <div className="inv-total-row inv-grand-total">

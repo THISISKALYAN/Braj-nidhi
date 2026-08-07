@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { calculateDiscount } from '@/lib/roomPricing';
+import { GST_RATE_PERCENTAGE } from '@/config/taxes';
 
 const BookNowButton = dynamic(() => import('@/components/BookNowButton'), { ssr: false });
 const RoomUnavailablePopup = dynamic(() => import('@/components/RoomUnavailablePopup'), { ssr: false });
@@ -868,7 +870,7 @@ function RoomsComboContent() {
             <div className="rcp-policy-item"><Leaf size={14}/><span>Pure Sattvic vegetarian — no meat, alcohol or tobacco</span></div>
             <div className="rcp-policy-item"><ShieldCheck size={14}/><span>Free cancellation up to 48 hrs before arrival</span></div>
             <div className="rcp-policy-item"><Wifi size={14}/><span>Complimentary high-speed Wi-Fi in all rooms</span></div>
-            <div className="rcp-policy-item"><Info size={14}/><span>Prices inclusive of 5% GST</span></div>
+            <div className="rcp-policy-item"><Info size={14}/><span>Prices inclusive of {GST_RATE_PERCENTAGE}% GST</span></div>
           </div>
         </div>
 

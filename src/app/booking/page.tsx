@@ -8,6 +8,7 @@ import {
 } from '@/lib/roomPricing';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { buildErpRooms } from '@/lib/erpReservation';
+import { GST_RATE_PERCENTAGE, GST_RATE_FRACTION } from '@/config/taxes';
 
 /** Set NEXT_PUBLIC_DEBUG_PRICES=1 to trace ERP pricing in the browser console. */
 const DEBUG_PRICES = process.env.NEXT_PUBLIC_DEBUG_PRICES === '1';
@@ -337,8 +338,8 @@ export default function BookingPage() {
   const checkInTime  = checkIn  ? new Date(`${checkIn}T14:00:00`).toLocaleTimeString('en-US',  { hour: 'numeric', minute: '2-digit', hour12: true }) : '2:00 PM';
   const checkOutTime = checkOut ? new Date(`${checkOut}T11:00:00`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '11:00 AM';
 
-  // Price calculations - displayed prices are GST-inclusive (5%)
-  const gstRate = 0.05;
+  // Price calculations - displayed prices are GST-inclusive
+  const gstRate = GST_RATE_FRACTION;
   // Built by the same helper that produces the ERP payload, so the displayed
   // subtotal, the gateway amount and the reservation cannot drift apart. This
   // previously used an un-normalized key lookup, which is why multi-room totals
@@ -761,8 +762,8 @@ export default function BookingPage() {
                 total_amount: payableTotal,
                 taxable_amount: taxableAmount,
                 gst_amount: gstAmount,
-                gst_rate: 5,
-                tax_rate: 5,
+                gst_rate: GST_RATE_PERCENTAGE,
+                tax_rate: GST_RATE_PERCENTAGE,
                 guest: {
                   name: guestName,
                   email: guestDetails.email,
@@ -805,8 +806,8 @@ export default function BookingPage() {
                   total_amount: erpAmountConfirmed,
                   taxable_amount: taxableAmount,
                   gst_amount: gstAmount,
-                  gst_rate: 5,
-                  tax_rate: 5,
+                  gst_rate: GST_RATE_PERCENTAGE,
+                  tax_rate: GST_RATE_PERCENTAGE,
                   mode_of_payment: 'Bank Transfer',
                   gateway_payment_id: response.razorpay_payment_id,
                   gateway_order_id: response.razorpay_order_id,
@@ -3333,7 +3334,7 @@ export default function BookingPage() {
                       <span>₹{taxableAmount.toLocaleString()}</span>
                     </div>
                     <div className="summary-row-mmt" style={{ color: '#6b7280', fontSize: 13 }}>
-                      <span>GST 5%</span>
+                      <span>GST {GST_RATE_PERCENTAGE}%</span>
                       <span>₹{gstAmount.toLocaleString()}</span>
                     </div>
                   </div>

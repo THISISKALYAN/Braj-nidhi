@@ -13,6 +13,7 @@ import {
   normalizeRoomKey,
   type RoomKey,
 } from '@/lib/roomPricing';
+import { GST_RATE_PERCENTAGE } from '@/config/taxes';
 
 export interface ErpRoomRow {
   room_type: string;
@@ -177,8 +178,8 @@ export function buildErpRooms(input: BuildRoomsInput): BuildRoomsResult {
       amount: row.amount,
       taxable_amount: taxable,
       gst_amount: row.amount - taxable,
-      gst_rate: gstRate * 100,
-      tax_rate: gstRate * 100,
+      gst_rate: GST_RATE_PERCENTAGE,
+      tax_rate: GST_RATE_PERCENTAGE,
       adults: adultsPerRow[index],
       children: childrenPerRow[index],
     };

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { GST_RATE_PERCENTAGE } from '@/config/taxes';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -491,8 +492,8 @@ export async function syncToERP(booking: BookingRecord): Promise<{
           total_amount: booking.totalAmount,
           taxable_amount: booking.taxableAmount,
           gst_amount: booking.gstAmount,
-          gst_rate: 5,
-          tax_rate: 5,
+          gst_rate: GST_RATE_PERCENTAGE,
+          tax_rate: GST_RATE_PERCENTAGE,
         }),
         guest: {
           name: booking.guestName || 'Guest',
@@ -510,8 +511,8 @@ export async function syncToERP(booking: BookingRecord): Promise<{
               amount: booking.totalAmount,
               taxable_amount: booking.taxableAmount,
               gst_amount: booking.gstAmount,
-              gst_rate: 5,
-              tax_rate: 5,
+              gst_rate: GST_RATE_PERCENTAGE,
+              tax_rate: GST_RATE_PERCENTAGE,
             }),
           },
         ],
@@ -570,8 +571,8 @@ export async function syncMultiToERP(bookingsToSync: BookingRecord[]): Promise<{
           total_amount: primary.totalAmount,
           taxable_amount: primary.taxableAmount,
           gst_amount: primary.gstAmount,
-          gst_rate: 5,
-          tax_rate: 5,
+          gst_rate: GST_RATE_PERCENTAGE,
+          tax_rate: GST_RATE_PERCENTAGE,
         }),
         guest: {
           name: primary.guestName || 'Guest',
@@ -590,8 +591,8 @@ export async function syncMultiToERP(bookingsToSync: BookingRecord[]): Promise<{
               amount: itemAmount,
               taxable_amount: b.taxableAmount,
               gst_amount: b.gstAmount,
-              gst_rate: 5,
-              tax_rate: 5,
+              gst_rate: GST_RATE_PERCENTAGE,
+              tax_rate: GST_RATE_PERCENTAGE,
             }),
             adults: Math.max(1, b.adults || 1),
             children: b.children || 0,
